@@ -97,6 +97,8 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .nv svg{color:var(--ic)}
 .nv:hover{background:var(--sf2)}.nv.on{background:var(--hl);color:var(--txa);font-weight:500}.nv.on svg{color:var(--ica)}
 .nv.demo-n{margin-top:auto;border:1px dashed var(--bst)}
+.nv:disabled,.shi:disabled{opacity:.45;cursor:not-allowed}.nv:disabled:hover,.shi:disabled:hover{background:none}
+.qa button:disabled{cursor:not-allowed;opacity:.55}.qa button:disabled:hover{border-color:var(--bs);background:var(--sf2)}
 .main{display:flex;flex-direction:column;min-width:0;height:100%;min-height:0}
 .top{display:flex;align-items:center;gap:12px;padding:0 var(--gut);height:56px;border-bottom:1px solid var(--bs);background:var(--sf);flex:none}
 .hamb{display:none}
@@ -427,7 +429,8 @@ const ago=t=>{const m=Math.max(0,Math.round((Date.now()-t)/60000));return m<1?'J
 const pill=s=>({crit:`<span class="pill crit">${I('xc',12)}Critical</span>`,warn:`<span class="pill warn">${I('warn',12)}Warning</span>`,info:`<span class="pill info">${I('info',12)}Info</span>`,ok:`<span class="pill ok">${I('okc',12)}Healthy</span>`}[s]);
 const lvlVar=p=>p>=90?'--cf':p>=75?'--wnf':'--ica';
 const lg=rows=>`<div class="lgd">${rows.map(r=>`<div class="lgr"><span style="color:var(${r[3]})">${I(r[0],15)}</span><span>${r[1]}</span><b>${r[2]}</b></div>`).join('')}</div>`;
-const go=(t,p,extra)=>`<button class="lk" data-act="go" data-p="${p}" ${extra||''}>${esc(t)}${I('right',13)}</button>`;
+/* Only the dashboard is available in this release, so links to other sections are not shown. */
+const go=()=>'';
 function donut(parts,big,small,size){size=size||108;const sw=13,r=(size-sw)/2,C=2*Math.PI*r,h=size/2;let off=0;const tot=parts.reduce((s,p)=>s+p.v,0)||1;
  const segs=parts.filter(p=>p.v>0).map(p=>{const L=C*p.v/tot;const el=`<circle cx="${h}" cy="${h}" r="${r}" fill="none" style="stroke:var(${p.col})" stroke-width="${sw}" stroke-dasharray="${L} ${C-L}" stroke-dashoffset="${-off}" transform="rotate(-90 ${h} ${h})"/>`;off+=L;return el}).join('');
  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img" aria-label="${esc(big+' '+small)}" style="flex:none"><circle cx="${h}" cy="${h}" r="${r}" fill="none" style="stroke:var(--bd)" stroke-width="${sw}"/>${segs}<text x="${h}" y="${h+2}" text-anchor="middle" class="dn1">${big}</text><text x="${h}" y="${h+18}" text-anchor="middle" class="dn2">${small}</text></svg>`}
@@ -481,7 +484,7 @@ function r_resources(){return{sub:'CPU, memory and temperature',body:meter('CPU'
 function r_network(w,c){const cur=NET.hist[NET.hist.length-1],top=CAMS.slice().sort((a,b)=>b.br-a.br).slice(0,3);
  return{sub:'Incoming from cameras',body:`<div class="big">${cur.toFixed(0)}<small> Mbps of ${NET.cap}</small></div><div style="margin:10px 0">${spark(NET.hist,300,56)}</div>${c.top?`<dl class="kv">${top.map(k=>`<div><dt>${k.id} ${k.name}</dt><dd>${k.br} Mbps</dd></div>`).join('')}</dl>`:''}`,foot:go('Open network settings','settings','data-anchor="net"')}}
 function r_actions(w,c){const ids=(c.actions||[]).filter(k=>QR[S.user.role].includes(k));
- return{sub:'Shortcuts for your role',body:ids.length?`<div class="qa">${ids.map(k=>`<button data-act="go" data-p="${QA[k][2]}">${I(QA[k][1],18)}${QA[k][0]}</button>`).join('')}</div>`:`<div class="er">${I('bolt',28)}<b>No shortcuts selected</b>Pick the actions you use most in the widget settings.</div>`,foot:''}}
+ return{sub:'Shortcuts for your role',body:ids.length?`<div class="qa">${ids.map(k=>`<button disabled aria-disabled="true" title="Coming soon">${I(QA[k][1],18)}${QA[k][0]}</button>`).join('')}</div>`:`<div class="er">${I('bolt',28)}<b>No shortcuts selected</b>Pick the actions you use most in the widget settings.</div>`,foot:''}}
 function r_notes(w){return{sub:'Saved automatically',body:`<textarea class="inp ta" id="note-${w.id}" data-note="${w.id}" aria-label="Notes" placeholder="Write a handover note, for example: CH05 camera cable replaced, waiting for confirmation.">${esc(w.text||'')}</textarea>`,foot:''}}
 const availOf=(x,range)=>Math.min(100,x.av+(range==='30d'?(x.av<99?1.4:.05):0));
 function r_avail(w,c){const avg=CAMS.reduce((s,x)=>s+availOf(x,c.range),0)/CAMS.length,worst=CAMS.slice().sort((a,b)=>availOf(a,c.range)-availOf(b,c.range)).slice(0,3);
@@ -596,38 +599,13 @@ function widget(w){const t=WT[w.type],c=cfgOf(w),title=w.title||t.n;let R;try{R=
 const stp=s=>({online:`<span class="pill ok">${I('okc',12)}Online</span>`,offline:`<span class="pill crit">${I('xc',12)}Offline</span>`,maint:`<span class="pill warn">${I('warn',12)}Maintenance</span>`}[s]);
 const rcp=s=>({rec:`<span class="pill ok">${I('okc',12)}Recording</span>`,failed:`<span class="pill crit">${I('xc',12)}Failed</span>`,stop:`<span class="pill info">${I('alert',12)}Stopped</span>`}[s]);
 const tbl=(h,rows)=>`<div class="tw"><table class="xt"><thead><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
-const card=(t,sub,body,id)=>`<section class="card" ${id?'id="sec-'+id+'"':''}><h2>${t}</h2>${sub?`<p class="cs">${sub}</p>`:''}<div class="cb">${body}</div></section>`;
-const lastRec=k=>k.rec==='rec'?'Now':k.rec==='failed'?'14 min ago':k.st==='offline'?(k.id==='CH05'?'2 min ago':'40 min ago'):'Yesterday, 18:00';
-function pageHead(p,sub,actions){const back=S.page!=='dashboard'?`<button class="ib" data-act="${PG[p][2]?'go':'goHome'}" ${PG[p][2]?'data-p="'+PG[p][2]+'"':''} aria-label="Back to ${PG[p][2]?PG[PG[p][2]][0]:'dashboard'}" title="Back">${I('arrowl',18)}</button>`:'';
- return `<div class="dh" style="padding-bottom:14px"><div class="dh1"><div class="ttl">${back}<div><h1>${PG[p][0]}</h1>${sub?`<p>${sub}</p>`:''}</div></div><div class="tb">${actions||''}</div></div></div>`}
-function pageBody(){const p=S.page;
- if(p==='live'){const n=S.liveCols;return [pageHead(p,CAMS.filter(c=>c.st==='online').length+' of '+CAMS.length+' cameras streaming. Select a camera to open it.',`<div class="seg" role="group" aria-label="Layout">${[[2,'2 × 2'],[3,'3 × 3'],[4,'4 × 4']].map(o=>`<button class="${n===o[0]?'on':''}" data-act="liveCols" data-v="${o[0]}">${o[1]}</button>`).join('')}</div>`),`<div class="livegrid c${n}">${CAMS.map((k,i)=>tile(k,i)).join('')}</div>`]}
- if(p==='playback')return [pageHead(p,'Recording schedule and the latest footage for each camera.',`<button class="btn" data-act="proto" data-l="Export footage">${I('download',15)}Export footage</button>`),card('Recording schedule',CAMS.filter(c=>c.rec==='rec').length+' of '+CAMS.length+' cameras recording',tbl(['Channel','Name','Status','Schedule','Last recording',''],CAMS.map(k=>[k.id,esc(k.name),rcp(k.rec),k.sch,lastRec(k),k.rec==='stop'&&k.st!=='online'?'<span class="mut sm">No footage</span>':`<button class="btn sm" data-act="clip" data-id="${k.id}">${I('play',13)}Play</button>`])))];
- if(p==='alarms'){let e=EV.slice();if(S.alFilter==='unack')e=e.filter(x=>!x.ack);if(S.alFilter==='crit')e=e.filter(x=>x.sev==='crit');const un=EV.filter(x=>!x.ack).length;
-  return [pageHead(p,un+' unacknowledged, '+EV.length+' in the last 2 hours',`<div class="seg" role="group" aria-label="Filter">${[['all','All'],['unack','Unacknowledged'],['crit','Critical']].map(o=>`<button class="${S.alFilter===o[0]?'on':''}" data-act="alFilter" data-v="${o[0]}">${o[1]}</button>`).join('')}</div>${un?`<button class="btn primary" data-act="ackAll">${I('check',15)}Acknowledge all</button>`:''}`),
-  card('Alarm log','Select an alarm to watch its clip.',e.length?tbl(['Severity','Type','Source','Time','Status',''],e.map(x=>[pill(x.sev),esc(x.type),esc(x.src),ago(x.at),x.ack?`<span class="acked">${I('check',13)}Acknowledged</span>`:`<button class="btn sm" data-act="ack" data-id="${x.id}">Acknowledge</button>`,`<button class="btn sm" data-act="event" data-id="${x.id}">${I('play',13)}View</button>`])):okEmpty('No alarms match','Try another filter.'))]}
- if(p==='devices'){const on=CAMS.filter(x=>x.st==='online').length;
-  return [pageHead(p,'This NVR and the cameras connected to it.',`<button class="btn primary" data-act="proto" data-l="Add camera">${I('plus',15)}Add camera</button>`),
-  card('Matrix NVR Device','Recorder details','<div class="facts">'+[['Model','Matrix NVR (sample)'],['Firmware','v1.0.0 (sample)'],['IP address','192.168.1.20'],['MAC address','00:1B:09:4C:2E:7A'],['Uptime','14 d 6 h'],['Time sync','NTP synced'],['Channels in use',CAMS.length+' of '+TOTAL_CH],['Storage',stor().tot+' TB, 4 disks']].map(f=>`<div class="fact"><small>${f[0]}</small><b>${f[1]}</b></div>`).join('')+'</div>','device'),
-  card('Cameras',on+' online, '+(CAMS.length-on)+' need attention',tbl(['Channel','Name','Status','Recording','Bitrate','Availability',''],CAMS.map(k=>[k.id,esc(k.name),stp(k.st),rcp(k.rec),k.br?k.br+' Mbps':'No video',k.av.toFixed(1)+'%',`<button class="btn sm" data-act="camView" data-id="${k.id}">Open</button>`])),'cams')]}
- if(p==='storage'){const s=stor();return [pageHead(p,'Capacity, disk health and how long footage is kept.'),
-  `<div class="cg">${card('Capacity',s.pct+'% used',`<div class="cw">${donut([{v:s.pct,col:lvlVar(s.pct)},{v:100-s.pct,col:'--bd'}],s.pct+'%','used')}<dl class="kv" style="flex:1;min-width:180px"><div><dt>Used</dt><dd>${s.used.toFixed(1)} of ${s.tot} TB</dd></div><div><dt>Free</dt><dd>${s.free.toFixed(1)} TB</dd></div><div><dt>Write rate</dt><dd>${sumBr().toFixed(0)} Mbps</dd></div></dl></div>`)}${card('Retention','Target set by the administrator',`<div class="big">${RET.have}<small> of ${RET.target} days kept</small></div><div class="bar" style="margin:12px 0"><i style="width:${RET.have/RET.target*100}%;background:var(--wnf)"></i></div><p class="mut sm">At the current write rate, the disks fill in ${RET.have} days, so the oldest 6 days are overwritten. Add a disk or lower bitrate on the busiest cameras to reach ${RET.target} days.</p>`)}</div>`,
-  card('Disks','1 needs attention',tbl(['Disk','Capacity','Used','Temperature','Power-on hours','Status'],DISKS.map(d=>['Disk '+d.n,d.cap+' TB',`<div style="display:flex;gap:8px;align-items:center;min-width:140px"><div class="bar" style="flex:1"><i style="width:${d.used}%;background:var(${lvlVar(d.used)})"></i></div>${d.used}%</div>`,d.temp+' °C',d.hrs.toLocaleString(),d.st==='ok'?pill('ok'):`<button class="pill warn" style="border:0;cursor:pointer" data-act="issue" data-id="a4">${I('warn',12)}Degraded</button>`])))]}
- if(p==='users')return [pageHead(p,'People who can sign in to this NVR, and what they changed.'),
-  card('Users','Roles are assigned by an administrator',tbl(['Name','Username','Role','Last sign-in'],Object.entries(USERS).map(([u,x])=>[`<span style="display:inline-flex;gap:8px;align-items:center"><span class="av s">${initials(x.name)}</span>${esc(x.name)}</span>`,u,`<span class="pill info">${x.label}</span>`,x.name===S.user.name?'Just now':(()=>{const s=ACT.find(a=>a.who===x.name&&a.what==='signed in from');return s?ago(s.at):'Yesterday, 09:12'})()]))),
-  card('Audit log','Sign-ins and configuration changes',tbl(['When','User','Action'],ACT.map(a=>[ago(a.at),esc(a.who),esc(a.what+' '+a.obj)])),'audit')];
- if(p==='settings'){const cur=NET.hist[NET.hist.length-1];return [pageHead(p,'System status, network and configuration.',`<button class="btn" data-act="proto" data-l="Back up configuration">${I('download',15)}Back up configuration</button>`),
-  `<div class="cg">${card('System status','CPU, memory and temperature against safe limits',meter('CPU',RES.cpu,'%',RES.cpu)+meter('Memory',RES.mem,'%',RES.mem)+meter('Temperature',RES.temp,' °C',RES.temp/80*100),'sys')}${card('Network','Incoming bandwidth from cameras',`<div class="big">${cur.toFixed(0)}<small> Mbps of ${NET.cap}</small></div><div style="margin:10px 0">${spark(NET.hist,300,56)}</div><dl class="kv"><div><dt>IP address</dt><dd>192.168.1.20</dd></div><div><dt>Gateway</dt><dd>192.168.1.1</dd></div><div><dt>DNS</dt><dd>192.168.1.1</dd></div></dl>`,'net')}</div>`,
-  card('Bandwidth by camera','Highest first',tbl(['Channel','Name','Bitrate','Share'],CAMS.filter(k=>k.br).sort((a,b)=>b.br-a.br).map(k=>[k.id,esc(k.name),k.br+' Mbps',(k.br/sumBr()*100).toFixed(0)+'%'])))]}
- if(p==='reports'){const t=trendSvg('24h'),d=trendData('24h');return [pageHead(p,'Availability and event reports.',`<button class="btn" data-act="proto" data-l="Generate report">${I('file',15)}Generate report</button>`),
-  `<div class="cg">${card('Event report','Last 24 hours',`<div class="cw" style="margin-bottom:8px"><div class="big">${t.tot}<small> events</small></div>${trendLeg}</div>${t.svg}`,'events')}${card('Camera availability','Last 7 days, lowest first',tbl(['Channel','Name','Availability'],CAMS.slice().sort((a,b)=>a.av-b.av).map(k=>[k.id,esc(k.name),`<span style="color:var(${k.av<95?'--cc':k.av<99?'--wnc':'--tx'})">${k.av.toFixed(1)}%</span>`])),'avail')}</div>`,
-  card('Events by period','Critical, warning and info counts',tbl(['Period','Critical','Warning','Info'],d.out.map((o,i)=>[d.lab[i],o.c,o.w,o.i])))]}
- return [pageHead(p,''),'']}
-function shell(){syncHide();let main;
- if(S.page==='dashboard'){const d=activeDash();main=`${dashHead()}<div class="content">${S.tip?`<div class="hintbar">${I('info',18)}<span style="flex:1">Click any widget to show its actions: move, expand, duplicate, edit, resize or remove. Click it again, or press Esc, to hide them.</span><button class="ib" data-act="tipClose" aria-label="Dismiss tip">${I('x',16)}</button></div>`:''}${d.widgets.length?`<div class="grid">${d.widgets.map(widget).join('')}</div>`:empty()}</div>`}
- else{const [h,...rest]=pageBody();main=`${h}<div class="content"><div class="pg">${rest.join('')}</div></div>`}
- const navKey=PG[S.page][2]||S.page;
- return `<div class="shell ${S.focus?'focus':''}"><nav class="rail" aria-label="Main">${NAV[S.user.role].map(k=>`<button class="nv ${k===navKey?'on':''}" data-act="go" data-p="${k}" ${k===navKey?'aria-current="page"':''}>${I(PG[k][1],20)}<span>${PG[k][0]}</span></button>`).join('')}<button class="nv demo-n" data-act="openDemo" title="Prototype tools">${I('cpu',20)}<span>Demo</span></button></nav>
+/* Dashboard is the only live section; the other items stay visible but can't be selected yet. */
+const navBtn=cls=>k=>k==='dashboard'
+ ?`<button class="${cls} on" data-act="goHome" aria-current="page">${I(PG[k][1],20)}<span>${PG[k][0]}</span></button>`
+ :`<button class="${cls}" disabled aria-disabled="true" title="${PG[k][0]}: coming soon">${I(PG[k][1],20)}<span>${PG[k][0]}</span></button>`;
+function shell(){syncHide();S.page='dashboard';let main;
+ {const d=activeDash();main=`${dashHead()}<div class="content">${S.tip?`<div class="hintbar">${I('info',18)}<span style="flex:1">Click any widget to show its actions: move, expand, duplicate, edit, resize or remove. Click it again, or press Esc, to hide them.</span><button class="ib" data-act="tipClose" aria-label="Dismiss tip">${I('x',16)}</button></div>`:''}${d.widgets.length?`<div class="grid">${d.widgets.map(widget).join('')}</div>`:empty()}</div>`}
+ return `<div class="shell ${S.focus?'focus':''}"><nav class="rail" aria-label="Main">${NAV[S.user.role].map(navBtn('nv')).join('')}<button class="nv demo-n" data-act="openDemo" title="Prototype tools">${I('cpu',20)}<span>Demo</span></button></nav>
  <div class="main">${topbar()}${crumbs()}${strip()}${main}</div>${S.focus?`<button class="btn exitf" data-act="focus">${I('x',15)}Exit focus mode</button>`:''}</div>`}
 function render(){const app=$('#app'),c0=$('.content'),sc=c0?c0.scrollTop:0,a=document.activeElement,pg=S.page;
  let sel=null;if(a&&a.dataset&&a.dataset.act&&app.contains(a))sel='[data-act="'+a.dataset.act+'"]'+(a.dataset.id?'[data-id="'+a.dataset.id+'"]':'')+(a.dataset.p?'[data-p="'+a.dataset.p+'"]':'');
@@ -646,7 +624,7 @@ function renderSheet(){const box=$('#sheet');if(!S.user){box.innerHTML='';return
  box.innerHTML=`<div class="sheet-scrim ${S.sheet?'open':''}" data-act="sheetClose" ${S.sheet?'':'hidden'}></div><aside id="sheetPanel" class="sheet ${S.sheet?'open':''}" role="dialog" aria-modal="true" aria-label="Main menu" ${S.sheet?'':'hidden'}>
  <div class="sh-h">${LOGO(88)}<button class="ib" data-act="sheetClose" aria-label="Close menu">${I('x',20)}</button></div>
  <div class="sh-u"><span class="av l">${initials(S.user.name)}</span><div><b>${esc(S.user.name)}</b><small>${S.user.label}</small></div></div>
- <nav class="sh-n" aria-label="Main">${NAV[S.user.role].map(k=>`<button class="shi ${k===navKey?'on':''}" data-act="go" data-p="${k}" ${k===navKey?'aria-current="page"':''}>${I(PG[k][1],20)}${PG[k][0]}</button>`).join('')}
+ <nav class="sh-n" aria-label="Main">${NAV[S.user.role].map(navBtn('shi')).join('')}
  <div class="msep"></div><div class="mhd">Prototype tools</div>${demoItems().filter(i=>!i.sep).map(i=>`<button class="shi ${i.dng?'dng':''}" data-act="${i.a}">${I(i.ic,18)}${esc(i.l)}</button>`).join('')}</nav>
  <div class="sh-f"><button class="shi" data-act="signOut">${I('logout',18)}Sign out</button></div></aside>`}
 function openSheet(){if(S.sheet)return;sheetPrevFocus=document.activeElement;S.sheet=true;closeMenu();renderSheet();document.body.classList.add('sheet-lock');
@@ -738,7 +716,7 @@ function openIssue(id){closeMenu();const list=attItems(),i=list.find(x=>x.id===i
  const left=m?mediaHTML(m.o,m.cap):sidePanel(i);
  modal({title:i.title+' · '+i.src.split(',')[0],w:980,kind:'issue',body:`<div class="iv-meta">${pill(i.sev)}<span>${esc(i.src)}</span><span>·</span><span>Detected ${ago(i.at)} (${tm(i.at)})</span></div><div class="iv"><div>${left}</div><div><h4>Summary</h4><p class="sum">${x.sum}</p><h4>Impact</h4><p class="sum" style="color:var(--tx2)">${x.impact}</p><h4>Suggested next steps</h4><ol>${x.steps.map(s=>`<li>${s}</li>`).join('')}</ol></div></div>`,
   pre:idx>=0&&list.length>1?`<span class="nav-n"><button class="ib" data-act="issueNav" data-d="-1" aria-label="Previous issue" ${idx===0?'disabled':''}>${I('left',16)}</button>${idx+1} of ${list.length}<button class="ib" data-act="issueNav" data-d="1" aria-label="Next issue" ${idx===list.length-1?'disabled':''}>${I('right',16)}</button></span>`:'',
-  btns:[{label:'Close',cls:'ghost',fn:()=>{}},{label:x.go[0],cls:'primary',fn:()=>{A.go({p:x.go[1]})}}],after:()=>{if(m)mountMedia($('#modal .mbox'),m.o)}});S.issueId=i.id}
+  btns:[{label:'Close',cls:'primary',fn:()=>{}}],after:()=>{if(m)mountMedia($('#modal .mbox'),m.o)}});S.issueId=i.id}
 function openEvent(id){closeMenu();const e=EV.find(x=>x.id===+id);if(!e)return;const c=camOf(e.cam),seed=CAMS.indexOf(c);
  const o={dur:12,label:c.id+' '+c.name,base:e.at-6000,subject:e.type!=='Alarm input 2'||true,rec:true,seed,line:e.type==='Line crossing',tamper:e.type==='Tamper',indoor:/Lobby|Server|Corridor|Warehouse/.test(c.name)};
  const sum={Intrusion:'A person entered the protected zone while the area was armed.',Tamper:'The camera view was blocked or moved. The image darkens at the end of the clip when the lens was covered.',"Line crossing":'An object crossed the virtual line in the direction set for this camera.',Motion:'Motion was detected inside the active area.',"Alarm input 2":'The door contact on alarm input 2 opened. The clip is from the nearest camera.'}[e.type];
@@ -747,7 +725,7 @@ function openEvent(id){closeMenu();const e=EV.find(x=>x.id===+id);if(!e)return;c
 function openCam(id){closeMenu();const c=camOf(id),seed=CAMS.indexOf(c),on=c.st==='online';
  const o=on?{dur:20,live:true,label:c.id+' '+c.name,base:Date.now(),subject:seed%3===0,rec:true,seed,indoor:/Lobby|Server|Corridor|Warehouse|Reception|Stairwell|Cafeteria/.test(c.name)}:{still:true,label:c.id+' '+c.name,base:Date.now()-120000,gray:true,banner:c.st==='offline'?'NO SIGNAL':'MAINTENANCE',seed};
  modal({title:c.id+' '+c.name,w:860,body:`<div class="iv-meta">${stp(c.st)}${rcp(c.rec)}<span>${c.br?c.br+' Mbps':'No video'}</span><span>·</span><span>${c.sch}</span></div>${mediaHTML(o,on?'Simulated live stream.':'Last frame before the camera went offline.')}`,
-  btns:[{label:'Close',cls:'ghost',fn:()=>{}},{label:'Play recordings',cls:'primary',fn:()=>{A.go({p:'playback'})}}],after:()=>mountMedia($('#modal .mbox'),o)})}
+  btns:[{label:'Close',cls:'primary',fn:()=>{}}],after:()=>mountMedia($('#modal .mbox'),o)})}
 function openClip(id){const c=camOf(id),seed=CAMS.indexOf(c),o={dur:30,label:c.id+' '+c.name,base:Date.now()-(c.rec==='failed'?14*60000:30000)-30000,subject:true,rec:true,seed};
  modal({title:'Playback · '+c.id+' '+c.name,w:860,body:`<div class="iv-meta">${rcp(c.rec)}<span>${c.sch}</span></div>${mediaHTML(o,c.rec==='failed'?'Last 30 seconds recorded before the write failure.':'Latest 30 seconds of recorded footage.')}`,
   btns:[{label:'Close',cls:'ghost',fn:()=>{}},{label:'Export footage',cls:'primary',fn:()=>{say('proto',{l:'Export footage'});return false}}],after:()=>mountMedia($('#modal .mbox'),o)})}
@@ -852,7 +830,7 @@ const A={
  openDemo(d,t){openMenu(t,demoItems(),270)},
  sheetOpen(){openSheet()},
  sheetClose(){closeSheet()},
- go(d){const p=d.p;closeMenu();const nav=()=>{if(S.modal)closeModal();if(S.drawer)closeDrawer();S.page=p;S.sel=null;S.anchor=d.anchor||(p==='storage'?null:null);if(d.anchor)S.anchor=d.anchor;render();const c=$('.content');if(c&&!d.anchor)c.scrollTop=0;const h=$('.dh h1');if(h){h.setAttribute('tabindex','-1');h.focus({preventScroll:true})}};
+ go(d){const p=d.p;if(p!=='dashboard')return;closeMenu();const nav=()=>{if(S.modal)closeModal();if(S.drawer)closeDrawer();S.page=p;S.sel=null;S.anchor=d.anchor||(p==='storage'?null:null);if(d.anchor)S.anchor=d.anchor;render();const c=$('.content');if(c&&!d.anchor)c.scrollTop=0;const h=$('.dh h1');if(h){h.setAttribute('tabindex','-1');h.focus({preventScroll:true})}};
   if(S.sheet)closeSheet(nav);else nav()},
  goHome(){A.go({p:'dashboard'})},
  crumbDash(d,t){dashMenu(t)},
@@ -936,7 +914,7 @@ function detail(t,c){
 function openExpand(id){const w=activeDash().widgets.find(x=>x.id===id),t=WT[w.type],c=Object.assign(cfgOf(w),{rows:'50',filter:'all',sev:'all',list:true,failed:true,top:true}),R=t.r(w,c);
  const dt=detail(w.type,c);modal({title:wName(w),w:1000,body:`<p class="sm mut" style="margin-bottom:14px">${esc(R.sub||'')}</p><div style="color:var(--tx)">${R.body}</div>${dt?'<div style="margin-top:18px">'+dt+'</div>':''}`,btns:[{label:'Edit settings',cls:'ghost',fn:()=>{setTimeout(()=>A.wConfig({id}),0)}},{label:'Close',cls:'primary',fn:()=>{}}]})}
 function bellHTML(){const u=EV.filter(e=>!e.ack);
- return `<div class="mhd">${u.length?u.length+' unacknowledged alarm'+(u.length>1?'s':''):'No unacknowledged alarms'}</div>${u.slice(0,5).map(x=>`<div class="lr isr" data-act="event" data-id="${x.id}" role="button" tabindex="0" style="padding:8px 10px;border-top:0"><span class="evi ${x.sev}">${I(x.sev==='crit'?'alert':'warn',16)}</span><div class="lg"><b>${esc(x.type)}</b><small>${esc(x.src)}, ${ago(x.at)}</small></div><button class="btn sm" data-act="ack" data-id="${x.id}">Acknowledge</button></div>`).join('')}<div class="msep"></div><button class="mi" data-act="go" data-p="alarms">${I('list',16)}<span>View all alarms</span></button>`}
+ return `<div class="mhd">${u.length?u.length+' unacknowledged alarm'+(u.length>1?'s':''):'No unacknowledged alarms'}</div>${u.slice(0,5).map(x=>`<div class="lr isr" data-act="event" data-id="${x.id}" role="button" tabindex="0" style="padding:8px 10px;border-top:0"><span class="evi ${x.sev}">${I(x.sev==='crit'?'alert':'warn',16)}</span><div class="lg"><b>${esc(x.type)}</b><small>${esc(x.src)}, ${ago(x.at)}</small></div><button class="btn sm" data-act="ack" data-id="${x.id}">Acknowledge</button></div>`).join('')}`}
 
 /* ---------- Events ---------- */
 document.addEventListener('click',e=>{
