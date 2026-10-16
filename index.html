@@ -1,0 +1,1011 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Matrix NVR web client: sign in, monitor cameras, recording, storage and alarms.">
+<meta name="theme-color" content="#0d171b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%230e9aa7%22%2F%3E%3Cg%20fill%3D%22%23fff%22%3E%3Ccircle%20cx%3D%229%22%20cy%3D%229%22%20r%3D%223%22%2F%3E%3Ccircle%20cx%3D%2217%22%20cy%3D%228%22%20r%3D%223%22%2F%3E%3Ccircle%20cx%3D%2224%22%20cy%3D%2210%22%20r%3D%222.4%22%2F%3E%3Ccircle%20cx%3D%228%22%20cy%3D%2217%22%20r%3D%223.4%22%2F%3E%3Ccircle%20cx%3D%2217%22%20cy%3D%2217%22%20r%3D%223.4%22%2F%3E%3Ccircle%20cx%3D%229%22%20cy%3D%2225%22%20r%3D%223.6%22%2F%3E%3Ccircle%20cx%3D%2219%22%20cy%3D%2225%22%20r%3D%223.6%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E">
+<title>Matrix NVR Web Client</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@600&display=swap" rel="stylesheet">
+<style>
+/* Layout: icon rail + top bar + status banner + 12-col widget grid, 24px page margin; mobile swaps the rail for a hamburger side sheet.
+   Tokens: the four Figma Tokens modes, selected with data-nvr on <html>. */
+:root,[data-nvr="dark-teal"]{--app:#0d171b;--sf:#172326;--sf2:#24333a;--sf3:#33434b;--hl:#123f44;--ov:#000;--tx:#f1f4f5;--tx2:#b8c4c8;--tx3:#8a9aa1;--txa:#86d5dc;--dis:#63747c;--inbg:#24333a;--inbd:#475861;--inerr:#fca5a5;--bp:#43bbc6;--bpt:#0b2b2f;--bph:#5cc5cf;--ic:#b8c4c8;--ica:#86d5dc;--bs:#24333a;--bd:#33434b;--bst:#63747c;--okf:#4ade80;--okb:#052e16;--okc:#86efac;--wnf:#fbbf24;--wnb:#451a03;--wnc:#fcd34d;--cf:#f87171;--cb:#450a0a;--cc:#fca5a5;--inf:#38bdf8;--infb:#082f49;--inft:#7dd3fc;--brand:#0e9aa7;--shadow:0 1px 2px rgba(0,0,0,.35);--pop:0 10px 30px rgba(0,0,0,.45);color-scheme:dark}
+[data-nvr="light-teal"]{--app:#f1f4f5;--sf:#fff;--sf2:#f7fafa;--sf3:#e7ecee;--hl:#d9f4f6;--ov:#0d171b;--tx:#172326;--tx2:#33434b;--tx3:#475861;--txa:#207e87;--dis:#8a9aa1;--inbg:#fff;--inbd:#b8c4c8;--inerr:#991b1b;--bp:#43bbc6;--bpt:#0b2b2f;--bph:#2d9da8;--ic:#33434b;--ica:#2d9da8;--bs:#e7ecee;--bd:#d5dde0;--bst:#8a9aa1;--okf:#16a34a;--okb:#f0fdf4;--okc:#166534;--wnf:#d97706;--wnb:#fffbeb;--wnc:#92400e;--cf:#dc2626;--cb:#fef2f2;--cc:#991b1b;--inf:#0284c7;--infb:#f0f9ff;--inft:#075985;--brand:#0e9aa7;--shadow:0 1px 2px rgba(13,23,27,.06),0 4px 14px rgba(13,23,27,.05);--pop:0 10px 30px rgba(13,23,27,.18);color-scheme:light}
+[data-nvr="dark-purple"]{--app:#0d171b;--sf:#172326;--sf2:#24333a;--sf3:#33434b;--hl:#1d0e31;--ov:#000;--tx:#f1f4f5;--tx2:#b8c4c8;--tx3:#8a9aa1;--txa:#d5bfe7;--dis:#63747c;--inbg:#24333a;--inbd:#475861;--inerr:#fca5a5;--bp:#a77bc8;--bpt:#12091f;--bph:#bc9ad7;--ic:#b8c4c8;--ica:#bc9ad7;--bs:#24333a;--bd:#33434b;--bst:#63747c;--okf:#4ade80;--okb:#052e16;--okc:#86efac;--wnf:#fbbf24;--wnb:#451a03;--wnc:#fcd34d;--cf:#f87171;--cb:#450a0a;--cc:#fca5a5;--inf:#38bdf8;--infb:#082f49;--inft:#7dd3fc;--brand:#7b4fa3;--shadow:0 1px 2px rgba(0,0,0,.35);--pop:0 10px 30px rgba(0,0,0,.45);color-scheme:dark}
+[data-nvr="light-purple"]{--app:#f1f4f5;--sf:#fff;--sf2:#f7fafa;--sf3:#e7ecee;--hl:#e9ddf3;--ov:#0d171b;--tx:#172326;--tx2:#33434b;--tx3:#475861;--txa:#371b5b;--dis:#8a9aa1;--inbg:#fff;--inbd:#b8c4c8;--inerr:#991b1b;--bp:#371b5b;--bpt:#fff;--bph:#56327e;--ic:#33434b;--ica:#56327e;--bs:#e7ecee;--bd:#d5dde0;--bst:#8a9aa1;--okf:#16a34a;--okb:#f0fdf4;--okc:#166534;--wnf:#d97706;--wnb:#fffbeb;--wnc:#92400e;--cf:#dc2626;--cb:#fef2f2;--cc:#991b1b;--inf:#0284c7;--infb:#f0f9ff;--inft:#075985;--brand:#56327e;--shadow:0 1px 2px rgba(13,23,27,.06),0 4px 14px rgba(13,23,27,.05);--pop:0 10px 30px rgba(13,23,27,.18);color-scheme:light}
+:root{--gut:24px}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0;background:var(--app)}
+body{color:var(--tx);font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+h1,h2,h3,p{margin:0}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--ica);outline-offset:2px}
+#app{height:100%}
+.ic{flex:none;display:block}
+.sp{flex:1}
+.mut{color:var(--tx2)}.sm{font-size:12px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* atoms */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;padding:0 12px;border-radius:8px;border:1px solid var(--bd);background:var(--sf);color:var(--tx);font-weight:500;font-size:13px;cursor:pointer;white-space:nowrap;transition:background .12s,border-color .12s}
+.btn:hover{background:var(--sf2)}
+.btn.primary{background:var(--bp);border-color:var(--bp);color:var(--bpt)}.btn.primary:hover{background:var(--bph);border-color:var(--bph)}
+.btn.danger{background:var(--cf);border-color:var(--cf);color:#fff}
+.btn.ghost{border-color:transparent;background:transparent}.btn.ghost:hover{background:var(--sf2)}
+.btn.sm{height:28px;padding:0 10px;font-size:12px}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.ib{width:32px;height:32px;display:inline-grid;place-items:center;border-radius:8px;border:0;background:transparent;color:var(--ic);cursor:pointer;flex:none}
+.ib:hover{background:var(--sf2);color:var(--tx)}
+.inp{width:100%;height:38px;padding:0 12px;border:1px solid var(--inbd);border-radius:8px;background:var(--inbg);color:var(--tx)}
+.inp::placeholder{color:var(--tx3)}
+.inp:focus{outline:2px solid var(--ica);outline-offset:0;border-color:var(--ica)}
+.inp.bad{border-color:var(--inerr)}
+.lbl{display:block;font-weight:500;font-size:13px;margin:14px 0 6px}
+.err{color:var(--cc);font-size:12px;min-height:16px;margin-top:4px}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500;white-space:nowrap}
+.pill.crit{background:var(--cb);color:var(--cc)}.pill.warn{background:var(--wnb);color:var(--wnc)}.pill.ok{background:var(--okb);color:var(--okc)}.pill.info{background:var(--infb);color:var(--inft)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bst);flex:none}.dot.good{background:var(--okf)}.dot.bad{background:var(--cf)}
+.chk{display:inline-flex;gap:8px;align-items:center;font-size:13px;cursor:pointer;user-select:none}
+.chk input{appearance:none;width:16px;height:16px;border:1px solid var(--bst);border-radius:3px;background:var(--inbg);margin:0;display:grid;place-items:center;cursor:pointer;flex:none}
+.chk input:checked{background:var(--bp);border-color:var(--bp)}
+.chk input:checked::after{content:'';width:9px;height:5px;border-left:2px solid var(--bpt);border-bottom:2px solid var(--bpt);transform:rotate(-45deg) translate(1px,-1px)}
+.chk input:disabled{opacity:.6}
+.alert{display:flex;gap:8px;align-items:center;padding:10px 12px;border-radius:8px;background:var(--cb);color:var(--cc);font-size:13px}
+.spin{width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:rot .7s linear infinite;display:inline-block}
+@keyframes rot{to{transform:rotate(360deg)}}
+.seg{display:flex;border:1px solid var(--bd);border-radius:8px;overflow:hidden;width:max-content;max-width:100%}
+.seg button{border:0;background:var(--sf);padding:6px 12px;font-size:13px;cursor:pointer;border-left:1px solid var(--bd)}
+.seg button:first-child{border-left:0}.seg button.on{background:var(--bp);color:var(--bpt);font-weight:500}
+.bar{height:8px;border-radius:99px;background:var(--bd);overflow:hidden;display:flex}.bar i{display:block;height:100%}
+.av{width:32px;height:32px;border-radius:50%;background:var(--hl);color:var(--txa);display:grid;place-items:center;font-weight:600;font-size:12px;flex:none}
+.av.s{width:28px;height:28px;font-size:11px}.av.l{width:40px;height:40px;font-size:14px}
+.logo{display:block;color:var(--tx3);flex:none}
+.logo .b{fill:var(--brand)}
+
+/* login */
+.login{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 16px;position:relative}
+.lcol{width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center;gap:40px}
+.lh{display:flex;flex-direction:column;align-items:center;gap:24px;text-align:center}
+.lh h1{font-size:28px;font-weight:600;letter-spacing:.01em}
+.lh p{font-size:16px;color:var(--tx2);margin-top:8px}
+.lf{width:100%;display:flex;flex-direction:column;gap:20px}
+.fg{display:flex;flex-direction:column;gap:8px}
+.fg>label{font-weight:500;font-size:14px}
+.lf .inp{height:44px;border-radius:6px;font-size:15px}
+.pw{position:relative}.pw .inp{padding-right:44px}.pw .ib{position:absolute;right:6px;top:6px}
+.fe{color:var(--cc);font-size:12px;margin-top:-2px}
+.lgb{width:100%;height:44px;border-radius:6px;font-size:15px;font-weight:600}
+.help{font-size:12px;color:var(--tx3);text-align:center}
+.devcard{width:100%;display:flex;justify-content:space-between;gap:12px;padding:14px 18px;border:1px solid var(--bs);border-radius:12px}
+.devcard small{display:block;color:var(--tx3);font-size:12px}.devcard b{font-weight:500;font-size:13px;display:flex;align-items:center;gap:6px}
+.copy{font-size:12px;color:var(--tx3);padding-top:24px}
+.lthm{position:absolute;top:16px;right:16px}
+.demo{position:fixed;left:16px;bottom:16px;margin-bottom:env(safe-area-inset-bottom,0px);max-width:340px;border:1px dashed var(--bst);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--tx2);background:var(--sf);display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow);z-index:5}
+.demo b{color:var(--tx);font-size:13px;font-weight:500}.demob{display:flex;gap:6px;flex-wrap:wrap}
+.demo .x{position:absolute;top:6px;right:6px;width:24px;height:24px}
+
+/* shell */
+.shell{height:100%;display:grid;grid-template-columns:76px minmax(0,1fr)}
+.rail{background:var(--sf);border-right:1px solid var(--bs);display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:4px;overflow:auto}
+.nv{width:64px;padding:8px 0 6px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--tx2);cursor:pointer;border:0;background:none}
+.nv svg{color:var(--ic)}
+.nv:hover{background:var(--sf2)}.nv.on{background:var(--hl);color:var(--txa);font-weight:500}.nv.on svg{color:var(--ica)}
+.nv.demo-n{margin-top:auto;border:1px dashed var(--bst)}
+.main{display:flex;flex-direction:column;min-width:0;height:100%;min-height:0}
+.top{display:flex;align-items:center;gap:12px;padding:0 var(--gut);height:56px;border-bottom:1px solid var(--bs);background:var(--sf);flex:none}
+.hamb{display:none}
+.thm{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 10px 0 8px;border:1px solid var(--bs);border-radius:8px;background:transparent;cursor:pointer;color:var(--tx2);font-size:12px;font-weight:500}
+.thm:hover{background:var(--sf2);color:var(--tx)}
+.sw{width:16px;height:16px;border-radius:50%;flex:none;border:1px solid var(--bd);display:inline-block}
+.bell{position:relative}.bell em{position:absolute;top:0;right:-2px;min-width:16px;height:16px;border-radius:8px;background:var(--cf);color:#fff;font-size:10px;font-style:normal;font-weight:500;display:grid;place-items:center;padding:0 4px}
+.uchip{display:flex;align-items:center;gap:10px;border:0;background:none;cursor:pointer;padding:4px 6px;border-radius:10px;text-align:left;color:var(--tx)}.uchip:hover{background:var(--sf2)}
+.uchip b{display:block;font-weight:500;font-size:13px;line-height:1.2}.uchip small{font-size:11px;color:var(--tx3)}
+.crumbs{display:none}
+.strip{display:flex;align-items:center;gap:12px;padding:8px var(--gut);font-size:13px;flex:none;border-bottom:1px solid var(--bs)}
+.strip .sd{color:var(--tx2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.strip.crit{background:var(--cb)}.strip.crit .sl,.strip.crit .ib{color:var(--cc)}
+.strip.warn{background:var(--wnb)}.strip.warn .sl,.strip.warn .ib{color:var(--wnc)}
+.strip.ok{background:var(--okb)}.strip.ok .sl,.strip.ok .ib{color:var(--okc)}
+.strip.off{background:var(--sf3)}
+.sl{display:flex;align-items:center;gap:8px;font-weight:600;white-space:nowrap}
+.spill{display:flex;align-items:center;gap:6px;border:0;border-radius:99px;padding:5px 12px 5px 9px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+.spill.crit{background:var(--cb);color:var(--cc)}.spill.warn{background:var(--wnb);color:var(--wnc)}.spill.off{background:var(--sf3);color:var(--tx)}
+.dh{flex:none;background:var(--sf);border-bottom:1px solid var(--bs);padding:14px var(--gut) 0}
+.dh1{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.dh1 h1{font-size:20px;font-weight:600;letter-spacing:-.01em}
+.dh1 .ttl{display:flex;align-items:center;gap:8px;min-width:0}
+.dh1 .ttl p{font-size:12px;color:var(--tx3)}
+.tb{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.upd{font-size:12px;color:var(--tx3)}
+.tabs{display:flex;gap:2px;overflow-x:auto;margin-top:8px;scrollbar-width:thin}
+.tab{display:flex;align-items:center;border-bottom:2px solid transparent;color:var(--tx2);white-space:nowrap;flex:none}
+.tab.on{border-color:var(--txa);color:var(--txa)}
+.tab>button:first-child{border:0;background:none;height:40px;padding:0 4px 0 12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;color:inherit}
+.tab .ib{width:26px;height:26px;color:inherit}
+.tabadd{border:0;background:none;color:var(--txa);font-weight:500;height:40px;padding:0 12px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.tabadd:disabled{color:var(--tx3);cursor:not-allowed}
+.content{flex:1;min-height:0;overflow:auto;padding:var(--gut)}
+.hintbar{display:flex;gap:10px;align-items:center;background:var(--hl);color:var(--tx);border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:16px}
+.hintbar>svg{color:var(--ica)}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+.w-3{grid-column:span 3}.w-4{grid-column:span 4}.w-6{grid-column:span 6}.w-8{grid-column:span 8}.w-12{grid-column:span 12}
+
+/* widgets */
+.widget{position:relative;background:var(--sf);border:1px solid var(--bs);border-radius:12px;box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:190px;min-width:0;transition:border-color .12s}
+.widget:hover{border-color:var(--ica)}
+.widget.wsel{border-color:var(--ica);box-shadow:0 0 0 1px var(--ica),var(--shadow)}
+.wh{display:flex;align-items:flex-start;gap:8px;padding:14px 16px 0}
+.wt{flex:1;min-width:0}.wt h3{font-size:14px;font-weight:600}.wt p{font-size:12px;color:var(--tx3);margin-top:2px}
+.wb{padding:12px 16px 14px;flex:1;min-width:0}
+.wfoot{border-top:1px solid var(--bs);padding:9px 16px;display:flex;justify-content:space-between;align-items:center;font-size:12px}
+.lk{border:0;background:none;color:var(--txa);font-weight:500;font-size:12px;cursor:pointer;padding:0;display:inline-flex;align-items:center;gap:4px}.lk:hover{text-decoration:underline}
+.widget.ld .wb,.widget.ld .wfoot{opacity:.45;pointer-events:none;transition:opacity .15s}
+.widget.ld::after{content:'';position:absolute;left:0;top:0;height:3px;width:35%;background:var(--ica);border-radius:12px 3px 3px 0;animation:ldb 1s ease-in-out infinite}
+@keyframes ldb{0%{left:0}100%{left:65%}}
+.widget.flash{animation:fl 1.4s ease-out}
+@keyframes fl{0%{box-shadow:0 0 0 4px var(--ica)}100%{box-shadow:var(--shadow)}}
+.wtb{position:absolute;top:-17px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:1px;background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:3px;box-shadow:var(--pop);opacity:0;pointer-events:none;transition:opacity .12s;z-index:6;white-space:nowrap}
+.widget.wsel>.wtb{opacity:1;pointer-events:auto}
+.tbi{width:30px;height:30px;display:grid;place-items:center;border:0;background:none;border-radius:7px;color:var(--ic);cursor:pointer}
+.tbi:hover{background:var(--sf2);color:var(--tx)}.tbi.grip{cursor:grab;touch-action:none}
+.tbsep{width:1px;height:18px;background:var(--bs);margin:0 3px}
+.lr{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--bs)}.lr:first-child{border-top:0;padding-top:2px}
+.lm{width:84px;flex:none}.lg{flex:1;min-width:0}.lg b{font-weight:500;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lg small{color:var(--tx3);font-size:12px;display:block}
+.evi{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex:none}.evi.crit{background:var(--cb);color:var(--cc)}.evi.warn{background:var(--wnb);color:var(--wnc)}.evi.info{background:var(--infb);color:var(--inft)}
+.acked{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--tx3);white-space:nowrap}
+.kv{margin:0;display:grid}.kv div{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-top:1px solid var(--bs);font-size:13px}.kv div:first-child{border-top:0}.kv dt{color:var(--tx3)}.kv dd{margin:0;font-weight:500;text-align:right}
+.cw{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.dn1{font-size:22px;font-weight:600;fill:var(--tx)}.dn2{font-size:11px;fill:var(--tx3)}
+.lgd{flex:1;min-width:130px;display:grid;gap:6px}.lgr{display:flex;align-items:center;gap:8px;font-size:13px}.lgr b{margin-left:auto;font-weight:600}
+.big{font-size:28px;font-weight:600;letter-spacing:-.02em;line-height:1.1}.big small{font-size:13px;font-weight:400;color:var(--tx3);letter-spacing:0}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.chip{padding:3px 9px;border-radius:99px;background:var(--sf2);border:1px solid var(--bs);font-size:12px}
+.mt{margin-bottom:12px}.mt .mrow{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;align-items:center}.mt .mrow b{font-weight:600;display:flex;gap:5px;align-items:center}
+.live{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.tile{position:relative;aspect-ratio:16/9;max-width:100%;border-radius:8px;overflow:hidden;color:#fff;font-size:11px;border:0;padding:0;cursor:pointer;text-align:left;display:block;width:100%}
+.tile .tl{position:absolute;left:8px;bottom:6px;font-weight:500;text-shadow:0 1px 2px rgba(0,0,0,.6)}.tile .tr{position:absolute;right:8px;top:6px;display:flex;gap:4px;align-items:center;background:rgba(0,0,0,.45);padding:1px 6px;border-radius:99px}
+.tile .tn{position:absolute;inset:0;display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;background:var(--sf3);color:var(--tx2);font-size:12px}
+.tile:hover{outline:2px solid var(--ica);outline-offset:-2px}
+.rdot{width:6px;height:6px;border-radius:50%;background:#ff5a5f;animation:blink 1.4s infinite}
+@keyframes blink{50%{opacity:.35}}
+.qa{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.qa button{display:flex;gap:8px;align-items:center;text-align:left;padding:10px;border:1px solid var(--bs);border-radius:10px;background:var(--sf2);cursor:pointer;font-weight:500;font-size:13px;color:var(--tx)}.qa button:hover{border-color:var(--ica);background:var(--hl)}.qa svg{color:var(--ica)}
+.ta{height:auto;min-height:130px;padding:10px 12px;resize:vertical;line-height:1.5;display:block}
+.er{min-height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px 8px;color:var(--tx2)}.er svg{margin:0 auto 8px;color:var(--tx3)}.er b{display:block;color:var(--tx);font-weight:500;margin-bottom:2px}.er .btn{margin-top:10px}
+.empty{border:2px dashed var(--bst);border-radius:16px;padding:52px 24px;text-align:center;background:var(--sf);max-width:720px;margin:20px auto}
+.empty h2{font-size:20px;font-weight:600;margin:14px 0 6px}.empty p{color:var(--tx2);max-width:460px;margin:0 auto 20px}
+.eic{width:56px;height:56px;border-radius:14px;background:var(--hl);color:var(--ica);display:grid;place-items:center;margin:0 auto}
+.tw{overflow-x:auto}
+.xt{width:100%;border-collapse:collapse;font-size:13px}.xt th{text-align:left;font-weight:500;color:var(--tx3);padding:8px 10px;border-bottom:1px solid var(--bs);font-size:12px;white-space:nowrap}.xt td{padding:9px 10px;border-bottom:1px solid var(--bs);white-space:nowrap}
+.xt tr:last-child td{border-bottom:0}
+.xt tbody tr:hover td{background:var(--sf2)}
+.stale{margin-left:auto}
+
+/* section pages */
+.pg{display:grid;gap:16px}
+.card{background:var(--sf);border:1px solid var(--bs);border-radius:12px;box-shadow:var(--shadow);min-width:0}
+.card>h2{font-size:15px;font-weight:600;padding:14px 16px 0}.card>.cs{font-size:12px;color:var(--tx3);padding:2px 16px 0}
+.card>.cb{padding:12px 16px 16px}
+.cg{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.livegrid{display:grid;gap:12px}
+.livegrid.c2{grid-template-columns:repeat(2,minmax(0,1fr))}.livegrid.c3{grid-template-columns:repeat(3,minmax(0,1fr))}.livegrid.c4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.fact{padding:12px 14px;border:1px solid var(--bs);border-radius:10px}.fact small{display:block;color:var(--tx3);font-size:12px}.fact b{font-weight:600;font-size:15px}
+
+/* drag */
+.dghost{position:fixed!important;z-index:200;pointer-events:none;margin:0;background:var(--sf);box-shadow:0 22px 48px rgba(0,0,0,.4);transform:rotate(1.2deg);border-color:var(--ica)}
+.widget.dsrc>.wtb{display:none}.widget.dsrc{opacity:.35;outline:2px dashed var(--ica);outline-offset:-2px}
+.dropline{position:fixed;z-index:150;background:var(--ica);border-radius:3px;pointer-events:none}
+body.dragging{cursor:grabbing;user-select:none}
+
+/* drawers, modals, menus */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:var(--sf);border-left:1px solid var(--bs);box-shadow:-8px 0 32px rgba(0,0,0,.3);display:flex;flex-direction:column;z-index:50;animation:slide .18s ease-out;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@keyframes slide{from{transform:translateX(24px);opacity:0}}
+.dr-h{display:flex;justify-content:space-between;gap:12px;padding:18px 16px 12px 20px}.dr-h h2{font-size:18px;font-weight:600}.dr-h p{font-size:12px;color:var(--tx3);margin-top:2px}
+.dr-s{padding:0 20px}.dr-b{flex:1;overflow:auto;padding:4px 20px 16px}.dr-f{border-top:1px solid var(--bs);padding:12px 20px;display:flex;gap:8px;align-items:center;font-size:12px;color:var(--tx3)}
+.dr-c{display:flex;gap:6px;flex-wrap:wrap;padding:12px 20px 4px}
+.cat{border:1px solid var(--bd);background:var(--sf);border-radius:99px;padding:4px 11px;font-size:12px;cursor:pointer;color:var(--tx2)}.cat.on{background:var(--tx);border-color:var(--tx);color:var(--sf)}
+.lc{display:flex;gap:12px;padding:14px 0;border-top:1px solid var(--bs);align-items:flex-start}.lc:first-child{border-top:0}
+.lci{width:38px;height:38px;border-radius:10px;background:var(--hl);color:var(--ica);display:grid;place-items:center;flex:none}
+.lc b{font-weight:600;display:block}.lc p{font-size:12px;color:var(--tx2);margin-top:2px}.lc em{font-style:normal;font-size:12px;color:var(--tx3);display:block;margin-top:4px}
+.isr{cursor:pointer;border-radius:8px}.isr:hover{background:var(--sf2)}
+.mc{display:flex;gap:8px;align-items:center;padding:6px 0;font-size:13px;cursor:pointer}
+.scrim{position:fixed;inset:0;background:color-mix(in srgb,var(--ov) 60%,transparent);display:grid;place-items:center;z-index:80;padding:16px;animation:fade .15s}
+@keyframes fade{from{opacity:0}}
+.modal{background:var(--sf);border:1px solid var(--bs);border-radius:16px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:100%;display:flex;flex-direction:column;overflow:hidden}
+.mh{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 16px 4px 22px}.mh h2{font-size:18px;font-weight:600}
+.mb{padding:8px 22px 4px;overflow:auto;color:var(--tx2)}.mb p{margin-bottom:8px}
+.mf{display:flex;justify-content:flex-end;align-items:center;gap:8px;padding:16px 22px 20px;flex-wrap:wrap}
+.opt{display:flex;gap:10px;padding:10px 12px;border:1px solid var(--bd);border-radius:10px;margin-top:8px;cursor:pointer;align-items:flex-start;color:var(--tx)}.opt:has(input:checked){border-color:var(--ica);background:var(--hl)}
+.opt input{accent-color:var(--bp);margin-top:3px}
+.opt b{font-weight:500;display:block}.opt span{font-size:12px;color:var(--tx2);display:block}.opt select{margin-top:6px;height:30px}
+.hint{display:flex;justify-content:space-between;font-size:12px;color:var(--tx3)}
+.tg{display:grid;gap:10px;margin-top:6px}.tpl{border:1px solid var(--bd);border-radius:12px;padding:12px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;color:var(--tx)}.tpl b{font-weight:600;display:block}.tpl span{font-size:12px;color:var(--tx2)}
+.menu{position:fixed;min-width:220px;background:var(--sf);border:1px solid var(--bs);border-radius:10px;box-shadow:var(--pop);padding:6px;z-index:90;max-height:80%;overflow:auto;animation:fade .1s}
+.mi{display:flex;gap:10px;align-items:center;width:100%;padding:8px 10px;border:0;background:none;border-radius:6px;color:var(--tx);font-size:13px;cursor:pointer;text-align:left}.mi:hover{background:var(--sf2)}.mi.dng{color:var(--cc)}.mi:disabled{opacity:.45;cursor:not-allowed}
+.mi svg{color:var(--ic)}.mi.dng svg{color:var(--cc)}.mi.on{background:var(--sf2)}
+.mi small{display:block;color:var(--tx3);font-size:11px}
+.msep{height:1px;background:var(--bs);margin:4px 0}.mhd{padding:8px 10px 6px;font-size:12px;color:var(--tx3)}
+.mi .ck{width:16px;display:inline-grid;color:var(--ica)}
+
+/* issue viewer */
+.iv{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px;color:var(--tx)}
+.iv-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:var(--tx3);font-size:12px;margin-bottom:12px}
+.media{position:relative;border-radius:10px;overflow:hidden;background:#0b0f12;aspect-ratio:16/9;max-width:100%}
+.media canvas{display:block;width:100%;height:100%}
+.pc{display:flex;align-items:center;gap:10px;padding:8px 2px 0;color:var(--tx2);font-size:12px}
+.pc input[type=range]{flex:1;accent-color:var(--bp)}
+.mcap{font-size:12px;color:var(--tx3);margin-top:6px}
+.iv h4{font-size:12px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px}
+.iv .sum{font-size:14px;line-height:1.55;color:var(--tx);margin-bottom:14px}
+.iv ol{margin:0 0 14px;padding-left:18px;font-size:13px;color:var(--tx2);display:grid;gap:4px}
+.panelbox{border:1px solid var(--bs);border-radius:10px;padding:14px}
+.nav-n{font-size:12px;color:var(--tx3);margin-right:auto;display:flex;align-items:center;gap:4px}
+
+/* toasts */
+#toasts{position:fixed;top:72px;right:16px;margin-top:env(safe-area-inset-top,0px);z-index:100;display:flex;flex-direction:column;gap:10px;width:min(400px,calc(100% - 32px));pointer-events:none;transition:right .2s}
+body.dopen #toasts{right:456px}
+.toast{--c:var(--ica);--ci:var(--ica);position:relative;overflow:hidden;pointer-events:auto;display:flex;gap:10px;align-items:flex-start;background:var(--sf);color:var(--tx);border:1px solid var(--bd);padding:14px 8px 16px 16px;border-radius:12px;box-shadow:var(--pop);font-size:13px;animation:tin .3s cubic-bezier(.2,.8,.2,1)}
+.toast.ok{--c:var(--okf);--ci:var(--okc)}.toast.warn{--c:var(--wnf);--ci:var(--wnc)}.toast.err{--c:var(--cf);--ci:var(--cc)}
+.toast.del{--c:var(--cf);--ci:var(--cc);border-left:3px solid var(--cf)}
+.toast>svg{color:var(--ci);margin-top:2px}
+.toast.out{animation:tout .2s ease-in forwards}
+@keyframes tin{from{transform:translateX(calc(100% + 24px));opacity:0}}
+@keyframes tout{to{transform:translateX(calc(100% + 24px));opacity:0}}
+.tbd{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.tbd b{font-weight:600}.tbd span{color:var(--tx2);line-height:1.45}
+.tpb{position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--c);transform-origin:left;animation:tpb linear forwards;animation-duration:var(--d,4500ms)}
+@keyframes tpb{to{transform:scaleX(0)}}
+.toast:hover .tpb{animation-play-state:paused}
+.tbtn{border:0;background:none;color:var(--txa);font-weight:600;cursor:pointer;padding:2px 8px;border-radius:6px;white-space:nowrap}.tbtn:hover{background:var(--sf2)}
+.tx{border:0;background:none;color:var(--tx3);cursor:pointer;display:grid;place-items:center;width:26px;height:26px;border-radius:6px;flex:none}.tx:hover{background:var(--sf2);color:var(--tx)}
+.hlp{font-size:12px;color:var(--tx3);margin-top:8px;line-height:1.5}
+.exitf{position:fixed;top:10px;right:14px;z-index:60}
+.shell.focus{grid-template-columns:minmax(0,1fr)}.shell.focus .rail,.shell.focus .top,.shell.focus .crumbs{display:none}
+
+/* mobile side sheet */
+.sheet-scrim{position:fixed;inset:0;z-index:70;background:color-mix(in srgb,var(--ov) 50%,transparent);opacity:0;transition:opacity .22s}
+.sheet{position:fixed;top:0;bottom:0;left:0;z-index:71;width:max(50vw,248px);max-width:360px;background:var(--sf);border-right:1px solid var(--bs);box-shadow:8px 0 32px rgba(0,0,0,.35);display:flex;flex-direction:column;transform:translateX(-100%);transition:transform .24s cubic-bezier(.2,.8,.2,1);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);touch-action:pan-y}
+.sheet.open{transform:none}.sheet-scrim.open{opacity:1}
+.sh-h{display:flex;align-items:center;justify-content:space-between;padding:12px 8px 12px 16px;border-bottom:1px solid var(--bs)}
+.sh-u{display:flex;align-items:center;gap:10px;padding:14px 16px}.sh-u b{display:block;font-weight:600;font-size:14px}.sh-u small{color:var(--tx3);font-size:12px}
+.sh-n{flex:1;overflow:auto;padding:4px 8px}
+.shi{display:flex;align-items:center;gap:12px;width:100%;height:44px;padding:0 12px;border:0;background:none;border-radius:8px;color:var(--tx2);font-size:14px;font-weight:500;cursor:pointer;text-align:left}
+.shi svg{color:var(--ic)}.shi:hover{background:var(--sf2)}.shi.on{background:var(--hl);color:var(--txa)}.shi.on svg{color:var(--ica)}.shi.dng{color:var(--cc)}.shi.dng svg{color:var(--cc)}
+.sh-f{border-top:1px solid var(--bs);padding:8px}
+body.sheet-lock{overflow:hidden}
+
+@media(max-width:1100px){.w-3,.w-4,.w-6{grid-column:span 6}.w-8{grid-column:span 12}.iv{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:860px){.thm .tl{display:none}.strip .sd{display:none}.livegrid.c3,.livegrid.c4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){
+ :root{--gut:16px}
+ .grid>*{grid-column:span 12!important}
+ .shell{grid-template-columns:minmax(0,1fr)}
+ .rail{display:none}
+ .hamb{display:inline-grid}
+ .top{gap:6px;padding:0 8px 0 4px}
+ .uchip div,.uchip .chev{display:none}
+ .thm{padding:0 6px;border:0}
+ .crumbs{display:flex;align-items:center;gap:2px;padding:4px 8px;background:var(--sf);border-bottom:1px solid var(--bs);font-size:13px;overflow-x:auto;flex:none;white-space:nowrap}
+ .crumbs button,.crumbs span.cc{display:inline-flex;align-items:center;gap:4px;border:0;background:none;color:var(--tx2);padding:6px;border-radius:6px;font-weight:500}
+ .crumbs button{cursor:pointer}.crumbs button:hover{background:var(--sf2)}
+ .crumbs .cur{color:var(--tx)}
+ .crumbs .sepc{color:var(--tx3)}
+ .strip{gap:8px}.strip .sp{display:none}.sl{flex:1;min-width:0;white-space:normal;align-items:flex-start}.sl svg{margin-top:2px}
+ .dh{padding-top:10px;padding-bottom:10px}
+ .dh .tabs{display:none}
+ .dh1{flex-direction:column;align-items:stretch;gap:8px}
+ .tb .upd{flex:1}.tb .fm span,.tb .aw span{display:none}.tb .fm,.tb .aw{width:34px;padding:0}
+ .spill{max-width:40vw;overflow:hidden;text-overflow:ellipsis}
+ #toasts{top:8px}
+ body.dopen #toasts{right:16px}
+ .demo{left:8px;right:8px;max-width:none;bottom:8px}
+ .devcard{padding:12px 14px}
+ .livegrid.c2,.livegrid.c3,.livegrid.c4{grid-template-columns:minmax(0,1fr)}
+ .mf{justify-content:stretch}.mf .btn{flex:1}.nav-n{width:100%}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div><div id="sheet"></div><div id="drawer"></div><div id="modal"></div><div id="menu"></div><div id="toasts" role="region" aria-label="Notifications"></div><div id="sr" class="sr" role="status" aria-live="polite"></div>
+<script>
+(function(){
+'use strict';
+const $=(s,r)=>(r||document).querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clone=o=>JSON.parse(JSON.stringify(o));
+const uid=()=>'w'+Math.random().toString(36).slice(2,8);
+const mem={};
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return mem[k]||null}},set(k,v){try{localStorage.setItem(k,v);return true}catch(e){mem[k]=v;return false}},del(k){try{localStorage.removeItem(k)}catch(e){delete mem[k]}}};
+const RM=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- lucide icons ---------- */
+const P={
+plus:'<path d="M12 5v14M5 12h14"/>',x:'<path d="M18 6 6 18M6 6l12 12"/>',check:'<path d="M20 6 9 17l-5-5"/>',
+down:'<path d="m6 9 6 6 6-6"/>',left:'<path d="m15 18-6-6 6-6"/>',right:'<path d="m9 18 6-6-6-6"/>',
+arrowl:'<path d="m12 19-7-7 7-7M19 12H5"/>',ext:'<path d="M5 12h14M12 5l7 7-7 7"/>',
+menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',
+more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+pencil:'<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
+trash:'<path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/>',
+copy:'<rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+refresh:'<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
+grip:'<circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>',
+eye:'<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+eyeoff:'<path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><path d="m2 2 20 20"/>',
+home:'<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/>',
+logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/>',
+warn:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/>',
+alert:'<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>',
+okc:'<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+xc:'<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/>',
+disk:'<path d="M22 12H2M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11"/><path d="M6 16h.01M10 16h.01"/>',
+activity:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+star:'<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>',
+lock:'<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+camera:'<path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/>',
+play:'<polygon points="6 3 20 12 6 21 6 3"/>',pause:'<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
+image:'<rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"/>',
+bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+grid:'<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>',
+server:'<rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/><path d="M6 6h.01M6 18h.01"/>',
+settings:'<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
+users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+file:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"/>',
+cpu:'<rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9"/><path d="M15 2v2M15 20v2M2 15h2M2 9h2M20 15h2M20 9h2M9 2v2M9 20v2"/>',
+download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
+tpl:'<rect width="18" height="7" x="3" y="3" rx="1"/><rect width="9" height="7" x="3" y="14" rx="1"/><rect width="5" height="7" x="16" y="14" rx="1"/>',
+info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+max:'<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>',
+wifi:'<path d="M12 20h.01M2 8.82a15 15 0 0 1 20 0M5 12.86a10 10 0 0 1 14 0M8.5 16.43a5 5 0 0 1 7 0"/>',
+wifioff:'<path d="M12 20h.01M8.5 16.43a5 5 0 0 1 7 0M2 8.82a15 15 0 0 1 4.17-2.65M10.66 5c4.01-.36 8.14.9 11.34 3.76M16.85 11.25a10 10 0 0 1 2.22 1.68M5 13a10 10 0 0 1 5.24-2.76"/><path d="m2 2 20 20"/>',
+list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+bolt:'<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+net:'<rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3M12 12V8"/>',
+note:'<path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5L15.5 3Z"/><path d="M15 3v6h6"/>',
+first:'<path d="m17 18-6-6 6-6M7 6v12"/>',last:'<path d="m7 6 6 6-6 6M17 6v12"/>',
+cols:'<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/>',
+undo:'<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>'
+};
+const I=(n,s)=>`<svg class="ic" viewBox="0 0 24 24" width="${s||18}" height="${s||18}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]||''}</svg>`;
+const LOGO=(w,tag)=>`<svg class="logo" width="${w}" viewBox="0 0 200 ${tag?66:52}" role="img" aria-label="Matrix Telecom | Security"><rect class="b" x="0" y="0" width="47" height="52"/><g fill="#fff">${[[10,10,3.2],[19,9,3.2],[28,10,2.8],[36,13,2.2],[9,20,4],[19,19,4],[28,21,3.5],[37,23,2.8],[9,32,4.6],[20,32,4.6],[31,33,4],[11,43,4.6],[23,43,4.6]].map(c=>`<circle cx="${c[0]}" cy="${c[1]}" r="${c[2]}"/>`).join('')}</g><rect class="b" x="50" y="0" width="150" height="52"/><text x="125" y="44" text-anchor="middle" fill="#fff" font-family="Oswald,Inter,sans-serif" font-weight="600" font-size="44" letter-spacing="1">MATRIX</text>${tag?'<text x="100" y="64" text-anchor="middle" fill="currentColor" font-family="Oswald,Inter,sans-serif" font-weight="600" font-size="12" letter-spacing="3.2">TELECOM | SECURITY</text>':''}</svg>`;
+
+/* ---------- Themes ---------- */
+const THEMES=[['dark-teal','Dark Teal','#0d171b','#43bbc6'],['light-teal','Light Teal','#f1f4f5','#43bbc6'],['dark-purple','Dark Purple','#0d171b','#a77bc8'],['light-purple','Light Purple','#f1f4f5','#371b5b']];
+const swatch=t=>`<span class="sw" style="background:linear-gradient(135deg,${t[2]} 50%,${t[3]} 50%)"></span>`;
+const curTheme=()=>THEMES.find(t=>t[0]===document.documentElement.dataset.nvr)||THEMES[0];
+function applyTheme(id){document.documentElement.dataset.nvr=id;store.set('nvr_theme_v3',id)}
+
+/* ---------- Demo data (minutes ago; re-based at each sign-in) ---------- */
+const USERS={operator:{name:'Neha Joshi',label:'Operator',pw:'Matrix@123'},admin:{name:'Arjun Mehta',label:'Administrator',pw:'Matrix@123'},manager:{name:'Sarah Khan',label:'Manager',pw:'Matrix@123'}};
+const CAMS=[
+ {id:'CH01',name:'Main entrance',st:'online',rec:'rec',br:6.1,av:100,sch:'Continuous'},{id:'CH02',name:'Lobby',st:'online',rec:'rec',br:4.8,av:99.9,sch:'Continuous'},
+ {id:'CH03',name:'Parking north',st:'online',rec:'rec',br:8.4,av:99.8,sch:'Motion + 24×7 low'},{id:'CH04',name:'Parking south',st:'online',rec:'rec',br:7.9,av:99.9,sch:'Motion + 24×7 low'},
+ {id:'CH05',name:'Main gate',st:'offline',rec:'stop',br:0,av:87.3,sch:'Continuous'},{id:'CH06',name:'Warehouse A',st:'online',rec:'rec',br:12.3,av:99.7,sch:'Continuous'},
+ {id:'CH07',name:'Warehouse B',st:'online',rec:'rec',br:11.7,av:99.9,sch:'Continuous'},{id:'CH08',name:'Server room',st:'online',rec:'rec',br:3.2,av:100,sch:'Continuous'},
+ {id:'CH09',name:'Loading dock',st:'online',rec:'failed',br:0,av:98.6,sch:'Continuous'},{id:'CH10',name:'Reception',st:'online',rec:'rec',br:4.1,av:99.9,sch:'Office hours'},
+ {id:'CH11',name:'Corridor 1F',st:'offline',rec:'stop',br:0,av:93.4,sch:'Motion'},{id:'CH12',name:'Corridor 2F',st:'online',rec:'rec',br:3.9,av:99.8,sch:'Motion'},
+ {id:'CH13',name:'Stairwell',st:'online',rec:'rec',br:2.8,av:100,sch:'Motion'},{id:'CH14',name:'Cafeteria',st:'maint',rec:'stop',br:0,av:96.2,sch:'Office hours'}];
+const TOTAL_CH=16;let evId=8;
+const EV=[
+ {id:1,sev:'crit',type:'Intrusion',src:'CH02 Lobby',cam:'CH02',m:3,ack:false},{id:2,sev:'crit',type:'Tamper',src:'CH08 Server room',cam:'CH08',m:11,ack:false},
+ {id:3,sev:'warn',type:'Line crossing',src:'CH03 Parking north',cam:'CH03',m:18,ack:false},{id:4,sev:'info',type:'Motion',src:'CH07 Warehouse B',cam:'CH07',m:26,ack:true},
+ {id:5,sev:'warn',type:'Alarm input 2',src:'Server room door',cam:'CH08',m:42,ack:true},{id:6,sev:'info',type:'Line crossing',src:'CH04 Parking south',cam:'CH04',m:58,ack:true},
+ {id:7,sev:'warn',type:'Intrusion',src:'CH12 Corridor 2F',cam:'CH12',m:65,ack:true},{id:8,sev:'info',type:'Motion',src:'CH01 Main entrance',cam:'CH01',m:90,ack:true}];
+const ALL=['operator','admin','manager'];
+const ATT=[
+ {id:'a1',sev:'crit',title:'Camera offline',src:'CH05 Main gate',cam:'CH05',m:2,roles:ALL},{id:'a2',sev:'crit',title:'Recording failed',src:'CH09 Loading dock',cam:'CH09',m:14,roles:ALL},
+ {id:'a3',sev:'crit',title:'Camera offline',src:'CH11 Corridor 1F',cam:'CH11',m:40,roles:ALL},{id:'a4',sev:'warn',title:'Disk 2 degraded',src:'Storage, SMART warning',m:60,roles:['admin']},
+ {id:'a5',sev:'warn',title:'Retention below target',src:'24 days kept, 30 days set',m:180,roles:['admin','manager']}];
+const DISKS=[{n:1,cap:3,used:71,temp:38,st:'ok',hrs:21840},{n:2,cap:3,used:85,temp:46,st:'warn',hrs:30112},{n:3,cap:3,used:74,temp:39,st:'ok',hrs:21835},{n:4,cap:3,used:80,temp:40,st:'ok',hrs:21831}];
+const RET={have:24,target:30},RES={cpu:34,mem:61,temp:52},NET={cap:400,hist:[]};
+const ACT=[
+ {who:'Arjun Mehta',what:'changed the recording schedule for',obj:'CH05 Main gate',m:25},{who:'Neha Joshi',what:'acknowledged',obj:'Intrusion, CH12 Corridor 2F',m:66},
+ {who:'Sarah Khan',what:'exported footage from',obj:'CH03, 14:00 to 14:30',m:95},{who:'Arjun Mehta',what:'signed in from',obj:'192.168.1.45',m:130},
+ {who:'Neha Joshi',what:'signed in from',obj:'192.168.1.52',m:141},{who:'Arjun Mehta',what:'added',obj:'CH14 Cafeteria',m:300},{who:'Sarah Khan',what:'generated the weekly report',obj:'',m:420}];
+function rebase(){const n=Date.now();[EV,ATT,ACT].forEach(a=>a.forEach(o=>{if(o.m!=null)o.at=n-o.m*60000}))}
+rebase();
+const QA={live:['Live view','camera','live'],playback:['Playback','play','playback'],export:['Export footage','download','playback'],ack:['Acknowledge alarms','bell','alarms'],addcam:['Add camera','plus','devices'],storage:['Storage settings','disk','storage'],users:['Manage users','users','users'],backup:['Back up configuration','server','settings'],report:['Generate report','file','reports']};
+const QR={operator:['live','playback','export','ack'],manager:['playback','export','report','ack'],admin:['live','playback','export','ack','addcam','storage','users','backup','report']};
+const QD={operator:['live','playback','export','ack'],manager:['report','export','playback'],admin:['addcam','storage','users','backup']};
+function seedr(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const sumBr=()=>CAMS.reduce((s,c)=>s+c.br,0);
+for(let i=0;i<24;i++){const r=seedr(i+5)();NET.hist.push(+(sumBr()*(0.9+r*0.2)).toFixed(1))}
+const camOf=id=>CAMS.find(c=>c.id===id);
+
+/* ---------- Pages ---------- */
+const PG={dashboard:['Dashboard','grid'],live:['Live view','camera'],playback:['Playback','play'],alarms:['Alarms','bell'],devices:['Devices','server'],storage:['Storage','disk','devices'],users:['Users','users'],settings:['Settings','settings'],reports:['Reports','file']};
+const NAV={operator:['dashboard','live','playback','alarms'],manager:['dashboard','playback','alarms','reports'],admin:['dashboard','live','playback','alarms','devices','users','settings']};
+
+/* ---------- Helpers ---------- */
+const ago=t=>{const m=Math.max(0,Math.round((Date.now()-t)/60000));return m<1?'Just now':m<60?m+' min ago':Math.round(m/60)+' h ago'};
+const pill=s=>({crit:`<span class="pill crit">${I('xc',12)}Critical</span>`,warn:`<span class="pill warn">${I('warn',12)}Warning</span>`,info:`<span class="pill info">${I('info',12)}Info</span>`,ok:`<span class="pill ok">${I('okc',12)}Healthy</span>`}[s]);
+const lvlVar=p=>p>=90?'--cf':p>=75?'--wnf':'--ica';
+const lg=rows=>`<div class="lgd">${rows.map(r=>`<div class="lgr"><span style="color:var(${r[3]})">${I(r[0],15)}</span><span>${r[1]}</span><b>${r[2]}</b></div>`).join('')}</div>`;
+const go=(t,p,extra)=>`<button class="lk" data-act="go" data-p="${p}" ${extra||''}>${esc(t)}${I('right',13)}</button>`;
+function donut(parts,big,small,size){size=size||108;const sw=13,r=(size-sw)/2,C=2*Math.PI*r,h=size/2;let off=0;const tot=parts.reduce((s,p)=>s+p.v,0)||1;
+ const segs=parts.filter(p=>p.v>0).map(p=>{const L=C*p.v/tot;const el=`<circle cx="${h}" cy="${h}" r="${r}" fill="none" style="stroke:var(${p.col})" stroke-width="${sw}" stroke-dasharray="${L} ${C-L}" stroke-dashoffset="${-off}" transform="rotate(-90 ${h} ${h})"/>`;off+=L;return el}).join('');
+ return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img" aria-label="${esc(big+' '+small)}" style="flex:none"><circle cx="${h}" cy="${h}" r="${r}" fill="none" style="stroke:var(--bd)" stroke-width="${sw}"/>${segs}<text x="${h}" y="${h+2}" text-anchor="middle" class="dn1">${big}</text><text x="${h}" y="${h+18}" text-anchor="middle" class="dn2">${small}</text></svg>`}
+const segbar=parts=>`<div class="bar" role="img" aria-label="${parts.map(p=>p.v+' '+p.l).join(', ')}">${parts.map(p=>`<i style="width:${p.v/(parts.reduce((s,q)=>s+q.v,0)||1)*100}%;background:var(${p.col})"></i>`).join('')}</div>`;
+function meter(label,val,unit,pct){const lv=pct>=90?'crit':pct>=75?'warn':'ok';return `<div class="mt"><div class="mrow"><span>${label}</span><b>${lv!=='ok'?`<span style="color:var(${lv==='crit'?'--cc':'--wnc'})">${I(lv==='crit'?'xc':'warn',14)}</span>`:''}${val}${unit}</b></div><div class="bar" role="img" aria-label="${label} ${val}${unit}"><i style="width:${Math.min(100,pct)}%;background:var(${lvlVar(pct)})"></i></div></div>`}
+function stor(){const tot=DISKS.reduce((s,d)=>s+d.cap,0),used=DISKS.reduce((s,d)=>s+d.cap*d.used/100,0);return{tot,used,pct:Math.round(used/tot*100),free:tot-used}}
+const okEmpty=(t,d)=>`<div class="er">${I('okc',28)}<b>${t}</b>${d}</div>`;
+const attItems=()=>ATT.filter(a=>a.roles.includes(S.user.role));
+function verdict(){const a=attItems(),c=a.filter(x=>x.sev==='crit').length,w=a.filter(x=>x.sev==='warn').length;return{c,w,lvl:c?'crit':w?'warn':'ok'}}
+const hh=n=>String(n).padStart(2,'0')+':00';
+function trendData(range){const n=range==='7d'?7:12,r=seedr(range.length*97),H=new Date().getHours(),D=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],d0=new Date().getDay(),out=[],lab=[];
+ for(let i=0;i<n;i++){out.push({c:Math.floor(r()*3),w:Math.floor(1+r()*4),i:Math.floor(2+r()*7)});lab.push(range==='7d'?D[(d0-(n-1-i)+14)%7]:range==='12h'?hh((H-(11-i)+48)%24):hh((H-(22-2*i)+48)%24))}return{out,lab}}
+function spark(arr,w,h){const mx=Math.max.apply(null,arr)*1.15,pts=arr.map((v,i)=>[i*(w/(arr.length-1)),h-v/mx*h]);const d=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join('');
+ return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none" role="img" aria-label="Incoming bandwidth"><path d="${d}L${w} ${h}L0 ${h}Z" style="fill:var(--hl)"/><path d="${d}" fill="none" style="stroke:var(--ica)" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`}
+const tm=t=>new Date(t||Date.now()).toLocaleTimeString([],{hour12:false});
+const tileBg=i=>`background:linear-gradient(180deg,hsl(${195+i*14},18%,30%) 0 55%,hsl(${195+i*14},14%,16%) 55% 100%)`;
+const tile=(k,i)=>k.st==='online'?`<button class="tile" data-act="camView" data-id="${k.id}" style="${tileBg(i)}" aria-label="Open ${k.id} ${esc(k.name)}"><span class="tr"><span class="rdot"></span>Live</span><span class="tl">${k.id} ${esc(k.name)}</span></button>`:`<button class="tile" data-act="camView" data-id="${k.id}" aria-label="Open ${k.id} ${esc(k.name)}"><span class="tn">${I(k.st==='offline'?'xc':'warn',22)}${k.st==='offline'?'No signal':'Under maintenance'}</span><span class="tl" style="color:var(--tx)">${k.id} ${esc(k.name)}</span></button>`;
+
+/* ---------- Widget renderers ---------- */
+function r_overview(w,c){
+ const rows=[['uptime','Uptime','14 d 6 h'],['firmware','Firmware','v1.0.0 (sample)'],['ip','IP address','192.168.1.20'],['time','Time sync','NTP synced'],['ch','Channels in use',CAMS.length+' of '+TOTAL_CH],['model','Model','Matrix NVR (sample)']].filter(r=>c.show.includes(r[0]));
+ return{sub:'Matrix NVR Device',body:`<dl class="kv">${rows.map(r=>`<div><dt>${r[1]}</dt><dd>${r[2]}</dd></div>`).join('')}</dl>`,foot:go('View device details','devices')}}
+function r_needs(w,c){let it=attItems();if(c.sev==='crit')it=it.filter(i=>i.sev==='crit');const sh=it.slice(0,+c.rows);
+ return{sub:it.length+' open issue'+(it.length===1?'':'s'),body:it.length?sh.map(i=>`<div class="lr"><div class="lm">${pill(i.sev)}</div><div class="lg"><b>${esc(i.title)}</b><small>${esc(i.src)}, ${ago(i.at)}</small></div><button class="btn sm" data-act="issue" data-id="${i.id}">View</button></div>`).join(''):okEmpty('No open issues','Everything you monitor is running normally.'),foot:it.length?`<button class="lk" data-act="openAttention">Review all ${it.length} issues${I('right',13)}</button>`:''}}
+function r_cameras(w,c){const on=CAMS.filter(x=>x.st==='online').length,off=CAMS.filter(x=>x.st==='offline').length,mt=CAMS.filter(x=>x.st==='maint').length,tot=CAMS.length;
+ const parts=[{l:'online',v:on,col:'--okf'},{l:'offline',v:off,col:'--cf'},{l:'in maintenance',v:mt,col:'--wnf'}];
+ const leg=lg([['okc','Online',on,'--okf'],['xc','Offline',off,'--cf'],['warn','Maintenance',mt,'--wnf']]);
+ const body=(c.view==='ring'?`<div class="cw">${donut(parts,on+'/'+tot,'online')}${leg}</div>`:`<div class="big">${on}<small> of ${tot} online</small></div><div style="margin:10px 0 12px">${segbar(parts)}</div>${leg}`)+(c.list&&off+mt?`<div class="chips">${CAMS.filter(x=>x.st!=='online').map(x=>`<span class="chip">${x.id} ${x.name}, ${x.st==='offline'?'offline':'maintenance'}</span>`).join('')}</div>`:'');
+ return{sub:tot+' of '+TOTAL_CH+' channels added',body,foot:go('Open devices','devices')}}
+function r_recording(w,c){const rc=CAMS.filter(x=>x.rec==='rec').length,fa=CAMS.filter(x=>x.rec==='failed').length,st=CAMS.filter(x=>x.rec==='stop').length;
+ const parts=[{l:'recording',v:rc,col:'--okf'},{l:'failed',v:fa,col:'--cf'},{l:'stopped',v:st,col:'--bst'}];
+ return{sub:'Across '+CAMS.length+' added cameras',body:`<div class="big">${rc}<small> of ${CAMS.length} recording</small></div><div style="margin:10px 0 12px">${segbar(parts)}</div>${lg([['okc','Recording',rc,'--okf'],['xc','Failed',fa,'--cf'],['alert','Stopped (camera offline or in maintenance)',st,'--bst']])}${c.failed&&fa?`<div class="chips">${CAMS.filter(x=>x.rec==='failed').map(x=>`<span class="chip">${x.id} ${x.name}, recording failed</span>`).join('')}</div>`:''}`,foot:go('Open recording schedule','playback')}}
+function r_storage(w,c){const s=stor(),col=lvlVar(s.pct),ret=RET.have<RET.target;
+ const head=c.view==='ring'?donut([{v:s.pct,col},{v:100-s.pct,col:'--bd'}],s.pct+'%','used'):`<div style="flex:1"><div class="big">${s.pct}%<small> used</small></div><div style="margin:10px 0"><div class="bar"><i style="width:${s.pct}%;background:var(${col})"></i></div></div></div>`;
+ const rows=`<dl class="kv"><div><dt>Used</dt><dd>${s.used.toFixed(1)} of ${s.tot} TB</dd></div><div><dt>Free</dt><dd>${s.free.toFixed(1)} TB</dd></div>${c.ret?`<div><dt>Retention</dt><dd style="color:var(${ret?'--wnc':'--okc'});display:flex;gap:5px;align-items:center">${I(ret?'warn':'okc',14)}${RET.have} of ${RET.target} days</dd></div>`:''}</dl>`;
+ return{sub:'Recording capacity',body:`<div class="cw" style="margin-bottom:10px">${head}</div>${rows}`,foot:go('Manage storage','storage')}}
+function r_events(w,c){let e=EV.slice();if(c.filter==='unack')e=e.filter(x=>!x.ack);if(c.filter==='crit')e=e.filter(x=>x.sev==='crit');const un=EV.filter(x=>!x.ack).length,sh=e.slice(0,+c.rows);
+ return{sub:un+' unacknowledged',body:sh.length?sh.map(x=>`<div class="lr isr" data-act="event" data-id="${x.id}" role="button" tabindex="0"><span class="evi ${x.sev}">${I(x.sev==='crit'?'alert':x.sev==='warn'?'warn':'info',16)}</span><div class="lg"><b>${esc(x.type)}</b><small>${esc(x.src)}, ${ago(x.at)}</small></div>${x.ack?`<span class="acked">${I('check',13)}Acknowledged</span>`:`<button class="btn sm" data-act="ack" data-id="${x.id}">Acknowledge</button>`}</div>`).join(''):okEmpty('No events to show','New events appear here as soon as the NVR detects them.'),foot:`${go('Open all alarms','alarms')}${un?`<button class="lk" data-act="ackAll">Acknowledge all (${un})</button>`:''}`}}
+function r_activity(w,c){const mine=S.user.role==='operator'||c.scope==='mine';const a=ACT.filter(x=>!mine||x.who===S.user.name).slice(0,+c.rows);
+ return{sub:mine?'Your actions':'All users',body:a.length?a.map(x=>`<div class="lr" style="align-items:flex-start"><span class="av s">${x.who.split(' ').map(s=>s[0]).join('')}</span><div class="lg"><span><b style="display:inline">${esc(x.who)}</b> ${esc(x.what)} ${esc(x.obj)}</span><small>${ago(x.at)}</small></div></div>`).join(''):okEmpty('No activity yet','Actions you take on this NVR are listed here.'),foot:go('Open audit log','users')}}
+function r_live(w,c){const cams=(c.cams||[]).slice(0,4).map(camOf).filter(Boolean);
+ return{sub:cams.length?cams.length+' camera'+(cams.length===1?'':'s')+', simulated feed':'No cameras selected',body:cams.length?`<div class="live">${cams.map((k,i)=>tile(k,i)).join('')}</div>`:`<div class="er">${I('camera',28)}<b>Choose cameras to show</b>Select up to 4 in the widget settings.</div>`,foot:go('Open live view','live')}}
+function trendSvg(range){const d=trendData(range),W=560,H=190,pl=34,pb=22,bw=(W-pl)/d.out.length,mx=Math.max.apply(null,d.out.map(o=>o.c+o.w+o.i))+1;
+ const bars=d.out.map((o,i)=>{const x=pl+i*bw+bw*.2,w2=bw*.6;let y=H-pb;const seg=(v,col,l)=>{const h=v/mx*(H-pb-8);y-=h;return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w2.toFixed(1)}" height="${h.toFixed(1)}" style="fill:var(${col})"><title>${d.lab[i]}: ${v} ${l}</title></rect>`};return seg(o.c,'--cf','critical')+seg(o.w,'--wnf','warning')+seg(o.i,'--ica','info')+`<text x="${(x+w2/2).toFixed(1)}" y="${H-6}" text-anchor="middle" class="dn2">${d.lab[i]}</text>`}).join('');
+ return {tot:d.out.reduce((s,o)=>s+o.c+o.w+o.i,0),svg:`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Events per period">${[0,.5,1].map(f=>`<line x1="${pl}" x2="${W}" y1="${(H-pb-f*(H-pb-8)).toFixed(1)}" y2="${(H-pb-f*(H-pb-8)).toFixed(1)}" style="stroke:var(--bs)"/><text x="${pl-6}" y="${(H-pb-f*(H-pb-8)+4).toFixed(1)}" text-anchor="end" class="dn2">${Math.round(f*mx)}</text>`).join('')}${bars}</svg>`}}
+const trendLeg=`<div style="display:flex;gap:14px;flex-wrap:wrap"><span class="lgr"><span style="color:var(--cf)">${I('alert',14)}</span>Critical</span><span class="lgr"><span style="color:var(--wnf)">${I('warn',14)}</span>Warning</span><span class="lgr"><span style="color:var(--ica)">${I('info',14)}</span>Info</span></div>`;
+function r_trend(w,c){const t=trendSvg(c.range);
+ return{sub:{'12h':'Last 12 hours','24h':'Last 24 hours','7d':'Last 7 days'}[c.range],body:`<div class="cw" style="margin-bottom:8px"><div class="big">${t.tot}<small> events</small></div>${trendLeg}</div>${t.svg}`,foot:go('Open event report','reports')}}
+function r_disks(w,c){return{sub:DISKS.filter(d=>d.st!=='ok').length+' need attention',body:DISKS.map(d=>`<div class="lr"><div class="lg"><b>Disk ${d.n}, ${d.cap} TB</b><small>${d.used}% used${c.temp?', '+d.temp+' °C':''}</small><div class="bar" style="margin-top:6px"><i style="width:${d.used}%;background:var(${lvlVar(d.used)})"></i></div></div>${d.st==='ok'?pill('ok'):`<span class="pill warn">${I('warn',12)}Degraded</span>`}</div>`).join(''),foot:go('Open disk manager','storage')}}
+function r_resources(){return{sub:'CPU, memory and temperature',body:meter('CPU',RES.cpu,'%',RES.cpu)+meter('Memory',RES.mem,'%',RES.mem)+meter('Temperature',RES.temp,' °C',RES.temp/80*100),foot:go('Open system status','settings')}}
+function r_network(w,c){const cur=NET.hist[NET.hist.length-1],top=CAMS.slice().sort((a,b)=>b.br-a.br).slice(0,3);
+ return{sub:'Incoming from cameras',body:`<div class="big">${cur.toFixed(0)}<small> Mbps of ${NET.cap}</small></div><div style="margin:10px 0">${spark(NET.hist,300,56)}</div>${c.top?`<dl class="kv">${top.map(k=>`<div><dt>${k.id} ${k.name}</dt><dd>${k.br} Mbps</dd></div>`).join('')}</dl>`:''}`,foot:go('Open network settings','settings','data-anchor="net"')}}
+function r_actions(w,c){const ids=(c.actions||[]).filter(k=>QR[S.user.role].includes(k));
+ return{sub:'Shortcuts for your role',body:ids.length?`<div class="qa">${ids.map(k=>`<button data-act="go" data-p="${QA[k][2]}">${I(QA[k][1],18)}${QA[k][0]}</button>`).join('')}</div>`:`<div class="er">${I('bolt',28)}<b>No shortcuts selected</b>Pick the actions you use most in the widget settings.</div>`,foot:''}}
+function r_notes(w){return{sub:'Saved automatically',body:`<textarea class="inp ta" id="note-${w.id}" data-note="${w.id}" aria-label="Notes" placeholder="Write a handover note, for example: CH05 camera cable replaced, waiting for confirmation.">${esc(w.text||'')}</textarea>`,foot:''}}
+const availOf=(x,range)=>Math.min(100,x.av+(range==='30d'?(x.av<99?1.4:.05):0));
+function r_avail(w,c){const avg=CAMS.reduce((s,x)=>s+availOf(x,c.range),0)/CAMS.length,worst=CAMS.slice().sort((a,b)=>availOf(a,c.range)-availOf(b,c.range)).slice(0,3);
+ return{sub:c.range==='30d'?'Last 30 days':'Last 7 days',body:`<div class="big">${avg.toFixed(1)}%<small> average uptime</small></div><div style="margin:12px 0 6px;color:var(--tx3);font-size:12px">Lowest availability</div>${worst.map(x=>{const v=availOf(x,c.range);return `<div class="mt"><div class="mrow"><span>${x.id} ${x.name}</span><b>${v.toFixed(1)}%</b></div><div class="bar"><i style="width:${v}%;background:var(${v<95?'--cf':'--wnf'})"></i></div></div>`}).join('')}`,foot:go('Open availability report','reports')}}
+
+/* ---------- Catalog ---------- */
+const camOpts=()=>CAMS.map(c=>[c.id,c.id+' '+c.name]);
+const WT={
+ overview:{n:'System overview',c:'Health',ic:'activity',d:'Uptime, firmware, address, time sync and channel use.',q:'What is this NVR and is it up to date?',roles:ALL,sizes:[3,4,6],def:3,schema:[{k:'show',l:'Details to show',t:'multi',o:()=>[['uptime','Uptime'],['firmware','Firmware'],['ip','IP address'],['time','Time sync'],['ch','Channels in use'],['model','Model']],d:['uptime','firmware','ip','time']}],r:r_overview},
+ needs:{n:'Needs attention',c:'Health',ic:'alert',d:'Open problems sorted by severity, each with an action.',q:'What should I fix first?',roles:ALL,sizes:[4,6,8,12],def:8,schema:[{k:'sev',l:'Show',t:'seg',o:[['all','All issues'],['crit','Critical only']],d:'all'},{k:'rows',l:'Rows',t:'seg',o:[['3','3'],['5','5'],['8','8']],d:'5'}],r:r_needs},
+ availability:{n:'Camera availability',c:'Health',ic:'clock',d:'Average uptime and the cameras that drop out most.',q:'Which cameras are least reliable?',roles:['admin','manager'],sizes:[3,4,6],def:4,schema:[{k:'range',l:'Period',t:'seg',o:[['7d','7 days'],['30d','30 days']],d:'7d'}],r:r_avail},
+ cameras:{n:'Camera status',c:'Video',ic:'camera',d:'Online, offline and maintenance cameras.',q:'Are my cameras connected?',roles:ALL,sizes:[3,4,6],def:3,schema:[{k:'view',l:'Chart style',t:'seg',o:[['ring','Ring'],['bar','Bar']],d:'ring'},{k:'list',l:'List cameras that are not online',t:'chk',d:true}],r:r_cameras},
+ recording:{n:'Recording status',c:'Video',ic:'play',d:'Which cameras are recording, failed or stopped.',q:'Is everything being recorded?',roles:ALL,sizes:[3,4,6],def:3,schema:[{k:'failed',l:'List cameras with failed recording',t:'chk',d:true}],r:r_recording},
+ live:{n:'Live view',c:'Video',ic:'camera',d:'A small wall of up to 4 live camera feeds.',q:'What is happening at key locations?',roles:['operator','admin'],sizes:[6,8,12],def:8,schema:[{k:'cams',l:'Cameras (up to 4)',t:'multi',max:4,o:camOpts,d:['CH01','CH03','CH05','CH08']}],r:r_live},
+ events:{n:'Events and alerts',c:'Events',ic:'bell',d:'Latest alarms and detections you can acknowledge.',q:'What just happened, and who has handled it?',roles:ALL,sizes:[4,6,8,12],def:6,schema:[{k:'filter',l:'Show',t:'seg',o:[['all','All'],['unack','Unacknowledged'],['crit','Critical']],d:'all'},{k:'rows',l:'Rows',t:'seg',o:[['4','4'],['6','6'],['8','8']],d:'4'}],r:r_events},
+ trend:{n:'Event trend',c:'Events',ic:'activity',d:'Events over time, split by severity.',q:'Is activity rising or unusual?',roles:ALL,sizes:[6,8,12],def:8,schema:[{k:'range',l:'Period',t:'seg',o:[['12h','12 hours'],['24h','24 hours'],['7d','7 days']],d:'24h'}],r:r_trend},
+ storage:{n:'Storage',c:'Storage and system',ic:'disk',d:'Capacity used, free space and retention against target.',q:'Will I still have the footage I need?',roles:['admin','manager'],sizes:[3,4,6],def:3,schema:[{k:'view',l:'Chart style',t:'seg',o:[['ring','Ring'],['bar','Bar']],d:'ring'},{k:'ret',l:'Show retention',t:'chk',d:true}],r:r_storage},
+ disks:{n:'Disk health',c:'Storage and system',ic:'disk',d:'Each hard disk with status, usage and temperature.',q:'Which disk is about to fail?',roles:['admin'],sizes:[4,6,8],def:4,schema:[{k:'temp',l:'Show temperature',t:'chk',d:true}],r:r_disks},
+ resources:{n:'System resources',c:'Storage and system',ic:'cpu',d:'CPU, memory and temperature against safe limits.',q:'Is the NVR overloaded?',roles:['admin'],sizes:[3,4,6],def:4,schema:[],r:r_resources},
+ network:{n:'Network and bandwidth',c:'Storage and system',ic:'net',d:'Incoming bandwidth and the busiest cameras.',q:'Is the network near its limit?',roles:['admin'],sizes:[4,6,8],def:4,schema:[{k:'top',l:'Show busiest cameras',t:'chk',d:true}],r:r_network},
+ activity:{n:'Recent activity',c:'Activity and tools',ic:'list',d:'Latest sign-ins and changes made on this NVR.',q:'Who did what, and when?',roles:ALL,sizes:[4,6,8,12],def:4,schema:[{k:'scope',l:'Show',roles:['admin','manager'],t:'seg',o:[['all','Everyone'],['mine','Only me']],d:'all'},{k:'rows',l:'Rows',t:'seg',o:[['4','4'],['6','6'],['8','8']],d:'4'}],r:r_activity},
+ actions:{n:'Quick actions',c:'Activity and tools',ic:'bolt',d:'Shortcuts to the tasks you repeat every day.',q:'How do I get to my common tasks faster?',roles:ALL,sizes:[3,4,6],def:4,schema:[{k:'actions',l:'Shortcuts',t:'multi',o:()=>QR[S.user.role].map(k=>[k,QA[k][0]]),d:()=>QD[S.user.role].slice()}],r:r_actions},
+ notes:{n:'Notes',c:'Activity and tools',ic:'note',d:'A free text pad for shift handover or reminders.',q:'What does the next shift need to know?',roles:ALL,sizes:[3,4,6,12],def:6,schema:[],r:r_notes}};
+const CATS=['Health','Video','Events','Storage and system','Activity and tools'];
+const SZT={3:'Quarter width',4:'One third width',6:'Half width',8:'Two thirds width',12:'Full width'};
+function cfgOf(w){const o={};WT[w.type].schema.forEach(f=>{const d=typeof f.d==='function'?f.d():f.d;o[f.k]=Array.isArray(d)?d.slice():d});return Object.assign(o,w.cfg||{})}
+const TPL=[
+ {id:'health',n:'Health at a glance',d:'System, camera, recording and storage status with open issues.',w:[['overview',3],['cameras',3],['recording',3],['storage',3],['needs',12]]},
+ {id:'monitor',n:'Live monitoring',d:'Live feeds beside the latest alarms and camera status.',w:[['live',8],['events',4],['cameras',4],['recording',4],['needs',4]]},
+ {id:'review',n:'Alarm review',d:'Event trends, alarms and handover notes for end of shift.',w:[['trend',8],['actions',4],['events',6],['notes',6]]},
+ {id:'infra',n:'Storage and system',d:'Disks, capacity, load and bandwidth in one place.',w:[['storage',4],['disks',4],['resources',4],['network',6],['availability',6]]}];
+const DEFAULTS={
+ admin:{name:'System health',w:[['overview',3],['cameras',3],['recording',3],['storage',3],['needs',8],['disks',4],['resources',4],['network',4],['activity',4]]},
+ operator:{name:'My operations',w:[['cameras',3],['recording',3],['events',6],['live',8],['actions',4],['activity',6],['notes',6]]},
+ manager:{name:'Management summary',w:[['overview',3],['cameras',3],['recording',3],['storage',3],['trend',8],['availability',4],['needs',8],['activity',4]]}};
+
+/* ---------- State ---------- */
+const MAXD=8;
+const S={user:null,page:'dashboard',anchor:null,dashboards:[],activeId:null,last:Date.now(),loading:false,offline:false,focus:false,errIds:new Set(),lib:{q:'',cat:'All'},drawer:null,cfg:null,flash:null,sel:null,hide:{strip:false},hideSig:null,wLoad:new Set(),modal:null,sheet:false,liveCols:3,alFilter:'all',tip:!store.get('nvr_tip3'),demo:!store.get('nvr_demo_hide'),lg:{err:'',eu:'',ep:'',attempts:0,lockUntil:0,loading:false,u:'',rem:true,show:false}};
+let tid=0,noteT=0;
+const key=()=>'nvr_proto_v4_'+S.user.u;
+const persist=()=>{if(!store.set(key(),JSON.stringify({d:S.dashboards,a:S.activeId}))&&!S.warnedStore){S.warnedStore=true;say('storageFail')}};
+const mk=(t,s)=>({id:uid(),type:t,size:s||WT[t].def,cfg:{}});
+const activeDash=()=>S.dashboards.find(d=>d.id===S.activeId);
+const refreshOf=d=>d.refresh==null?30:d.refresh;
+const fmtRefresh=s=>s>=60?(s/60)+' min':s+' s';
+const paused=()=>!!(S.drawer==='cfg'||S.drawer==='dset'||S.modal||(drag&&drag.started));
+function syncHide(){const sig=(S.offline?'off|':'')+attItems().map(i=>i.id).join(',');if(S.hideSig!==sig){S.hideSig=sig;S.hide={strip:false}}}
+const roleW=l=>l.filter(x=>WT[x[0]].roles.includes(S.user.role)).map(x=>mk(x[0],x[1]));
+function seed(){const d=DEFAULTS[S.user.role];S.dashboards=[{id:uid(),name:d.name,isDefault:true,widgets:roleW(d.w)}];S.activeId=S.dashboards[0].id}
+function loadUser(u){rebase();S.user={u,role:u,name:USERS[u].name,label:USERS[u].label};let ok=false;
+ try{const j=JSON.parse(store.get(key())||'null');if(j&&j.d&&j.d.length){S.dashboards=j.d;ok=true}}catch(e){}
+ if(!ok)seed();const def=S.dashboards.find(d=>d.isDefault)||S.dashboards[0];S.activeId=def.id;
+ S.page='dashboard';S.drawer=null;S.offline=false;S.focus=false;S.errIds=new Set();S.hide={strip:false};S.hideSig=null;S.last=Date.now();
+ ACT.unshift({who:S.user.name,what:'signed in from',obj:'this browser',at:Date.now()})}
+const initials=n=>n.split(' ').map(s=>s[0]).join('');
+const updText=()=>(S.offline?'Last updated ':'Updated ')+tm(S.last)+(refreshOf(activeDash())&&paused()?', auto-refresh paused':'');
+
+/* ---------- Login ---------- */
+function loginView(){const g=S.lg,locked=g.lockUntil>Date.now();
+ return `<main class="login"><button class="thm lthm" data-act="openTheme" aria-label="Colour theme">${swatch(curTheme())}<span class="tl">${curTheme()[1]}</span>${I('down',14)}</button>
+ <div class="lcol"><div class="lh">${LOGO(200,true)}<div><h1>MATRIX NVR</h1><p>Welcome! Login to access the portal</p></div></div>
+ <form id="lf" class="lf" novalidate>
+  <div id="lerr" class="alert" role="alert" ${g.err||locked?'':'hidden'}>${I('alert',16)}<span id="lerrt">${locked?lockText():esc(g.err)}</span></div>
+  <div class="fg"><label for="lu">Username</label><input id="lu" class="inp ${g.eu?'bad':''}" placeholder="Enter username" autocomplete="username" autocapitalize="off" spellcheck="false" value="${esc(g.u)}">${g.eu?`<div class="fe">${esc(g.eu)}</div>`:''}</div>
+  <div class="fg"><label for="lp">Password</label><div class="pw"><input id="lp" type="${g.show?'text':'password'}" class="inp ${g.ep?'bad':''}" placeholder="Enter password" autocomplete="current-password"><button type="button" class="ib" data-act="togglePw" aria-label="${g.show?'Hide':'Show'} password">${I(g.show?'eyeoff':'eye',18)}</button></div>${g.ep?`<div class="fe">${esc(g.ep)}</div>`:''}</div>
+  <label class="chk"><input type="checkbox" id="lr" ${g.rem?'checked':''}>Remember Me</label>
+  <button class="btn primary lgb" type="submit" ${g.loading||locked?'disabled':''}>${g.loading?'<span class="spin"></span>Signing in…':'Login'}</button>
+  <p class="help">Forgot your password? Ask your administrator to reset it.</p>
+ </form>
+ <div class="devcard"><div><small>Device</small><b>Matrix NVR Device</b></div><div><small>Address</small><b>192.168.1.20</b></div><div><small>Status</small><b><span class="dot good"></span>Reachable</b></div></div>
+ <div class="copy">© 2010 Matrix ComSec Pvt. Ltd. All Rights Reserved.</div></div>
+ ${S.demo?`<aside class="demo"><button class="ib x" data-act="demoHide" aria-label="Hide demo accounts">${I('x',14)}</button><b>Prototype demo accounts</b><span>Every account uses the password Matrix@123. The role decides the dashboard, navigation and widgets.</span><div class="demob"><button class="btn sm" data-act="fill" data-u="operator">Operator</button><button class="btn sm" data-act="fill" data-u="admin">Administrator</button><button class="btn sm" data-act="fill" data-u="manager">Manager</button></div></aside>`:''}</main>`}
+function lockText(){return 'Too many failed attempts. Try again in '+Math.max(1,Math.ceil((S.lg.lockUntil-Date.now())/1000))+' s.'}
+
+/* ---------- Shell ---------- */
+function hidePill(){if(!S.hide.strip)return '';
+ if(S.offline)return `<button class="spill off" data-act="stripShow">${I('wifioff',14)}Disconnected</button>`;
+ const v=verdict();if(v.lvl==='ok')return '';
+ return `<button class="spill ${v.lvl}" data-act="stripShow">${I(v.lvl==='crit'?'xc':'warn',14)}${v.c} critical${v.w?', '+v.w+' warning'+(v.w>1?'s':''):''}</button>`}
+function topbar(){const un=EV.filter(e=>!e.ack).length,th=curTheme();
+ return `<header class="top"><button class="ib hamb" data-act="sheetOpen" aria-label="Open menu" aria-expanded="${S.sheet}" aria-controls="sheet">${I('menu',22)}</button>${LOGO(80)}${hidePill()}<div class="sp"></div>
+ <button class="thm" data-act="openTheme" aria-label="Colour theme: ${th[1]}" title="Colour theme">${swatch(th)}<span class="tl">${th[1]}</span>${I('down',14)}</button>
+ <button class="ib bell" data-act="openBell" aria-label="Alarms, ${un} unacknowledged">${I('bell',18)}${un?`<em>${un}</em>`:''}</button>
+ <button class="uchip" data-act="openUser" aria-label="Account menu"><span class="av">${initials(S.user.name)}</span><div><b>${esc(S.user.name)}</b><small>${S.user.label}</small></div><span class="chev" style="color:var(--tx3)">${I('down',16)}</span></button></header>`}
+function crumbs(){const p=PG[S.page],parent=p[2]&&PG[p[2]],sep=`<span class="sepc">${I('right',14)}</span>`;
+ let h=`<nav class="crumbs" aria-label="Breadcrumb"><button data-act="goHome" aria-label="Home">${I('home',16)}</button>${sep}`;
+ if(S.page==='dashboard')h+=`<span class="cc">${I('grid',15)}Dashboard</span>${sep}<button data-act="crumbDash" class="cur" aria-haspopup="menu">${activeDash().isDefault?I('star',13):''}${esc(activeDash().name)}${I('down',14)}</button>`;
+ else{if(parent)h+=`<button data-act="go" data-p="${p[2]}">${I(parent[1],15)}${parent[0]}</button>${sep}`;h+=`<span class="cc cur" aria-current="page">${parent?'':I(p[1],15)}${p[0]}</span>`}
+ return h+'</nav>'}
+function strip(){const X=`<button class="ib" data-act="stripClose" aria-label="Dismiss status banner">${I('x',16)}</button>`;
+ if(S.hide.strip)return '';
+ if(S.offline)return `<div class="strip off" role="status"><span class="sl">${I('wifioff',16)}<span>Connection to the NVR lost</span></span><span class="sd">Showing data from ${tm(S.last)}. Widgets are marked stale until the connection returns.</span><span class="sp"></span><button class="btn sm" data-act="refresh">Retry now</button>${X}</div>`;
+ const v=verdict(),a=attItems();
+ if(v.lvl==='ok')return `<div class="strip ok" role="status"><span class="sl">${I('okc',16)}<span>All systems normal</span></span><span class="sd">No open issues for your role.</span><span class="sp"></span>${X}</div>`;
+ const first=a.slice(0,2).map(i=>i.title+': '+i.src.split(',')[0]).join('. ');
+ return `<div class="strip ${v.lvl}" role="status"><span class="sl">${I(v.lvl==='crit'?'xc':'warn',16)}<span>Needs attention: ${v.c} critical${v.w?', '+v.w+' warning'+(v.w>1?'s':''):''}</span></span><span class="sd">${esc(first)}${a.length>2?', and '+(a.length-2)+' more':''}</span><span class="sp"></span><button class="btn sm" data-act="openAttention">Review issues</button>${X}</div>`}
+function dashHead(){const d=activeDash();
+ const tabs=S.dashboards.map(x=>`<div class="tab ${x.id===S.activeId?'on':''}"><button data-act="switchDash" data-id="${x.id}" ${x.id===S.activeId?'aria-current="true"':''}>${x.isDefault?I('star',13):''}${esc(x.name)}</button><button class="ib" data-act="tabMenu" data-id="${x.id}" aria-label="Options for ${esc(x.name)}">${I('more',16)}</button></div>`).join('');
+ const tb=`<span class="upd" id="upd">${updText()}</span><button class="ib" data-act="refresh" aria-label="Refresh now" title="Refresh now">${I('refresh',17)}</button><button class="btn fm" data-act="focus" title="Focus mode">${I('max',15)}<span>Focus mode</span></button><button class="ib" data-act="dashSettings" data-id="${S.activeId}" title="Dashboard settings" aria-label="Dashboard settings">${I('settings',18)}</button><button class="btn primary aw" data-act="addWidget" title="Add widget">${I('plus',15)}<span>Add widget</span></button>`;
+ return `<div class="dh"><div class="dh1"><h1>${esc(d.name)}</h1><div class="tb">${tb}</div></div><div class="tabs" role="navigation" aria-label="Your dashboards">${tabs}<button class="tabadd" data-act="newDash" ${S.dashboards.length>=MAXD?'disabled':''}>${I('plus',15)}New dashboard</button></div></div>`}
+function empty(){return `<div class="empty"><div class="eic">${I('tpl',26)}</div><h2>${esc(activeDash().name)} is empty</h2><p>Add the widgets you want to keep an eye on, or start from a template and adjust it.</p><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn primary" data-act="addWidget">${I('plus',15)}Add widget</button><button class="btn" data-act="openTemplates">${I('tpl',15)}Start from a template</button></div></div>`}
+function widget(w){const t=WT[w.type],c=cfgOf(w),title=w.title||t.n;let R;try{R=t.r(w,c)}catch(e){R={sub:'',body:'',foot:''}}
+ let body=R.body,foot=R.foot;
+ if(S.errIds.has(w.id)){body=`<div class="er">${I('warn',28)}<b>Couldn't load ${esc(title)}</b>The NVR didn't return this data. Check the connection, then try again.<br><button class="btn sm" data-act="retryW" data-id="${w.id}">Retry</button></div>`;foot=''}
+ const ld=S.loading||S.wLoad.has(w.id);
+ const b=(a,ic,tip)=>`<button class="tbi" data-act="${a}" data-id="${w.id}" title="${tip}" aria-label="${tip}: ${esc(title)}">${I(ic,16)}</button>`;
+ const tb=`<div class="wtb" role="toolbar" aria-label="${esc(title)} actions"><button class="tbi grip" data-act="gripClick" data-id="${w.id}" data-grip title="Move: drag, or click for options" aria-label="Move ${esc(title)}">${I('grip',16)}</button><span class="tbsep"></span>${b('wExpand','max','Expand for details')}${b('wDup','copy','Duplicate')}${b('wConfig','pencil','Edit settings')}<span class="tbsep"></span>${b('wRefresh','refresh','Refresh data')}${b('wWidth','cols','Change width')}${b('wMore','more','More actions')}</div>`;
+ return `<article class="widget w-${w.size} ${S.sel===w.id?'wsel':''} ${ld?'ld':''}" ${ld?'aria-busy="true"':''} data-wid="${w.id}" tabindex="0" aria-label="${esc(title)}. Press Enter to show actions.">${tb}<header class="wh"><div class="wt"><h3>${esc(title)}</h3><p>${esc(R.sub||'')}</p></div>${S.offline?`<span class="pill warn stale" title="Showing data from ${tm(S.last)}">${I('clock',12)}Stale</span>`:''}</header><div class="wb">${body}</div>${foot?`<div class="wfoot">${foot}</div>`:''}</article>`}
+
+/* ---------- Section pages ---------- */
+const stp=s=>({online:`<span class="pill ok">${I('okc',12)}Online</span>`,offline:`<span class="pill crit">${I('xc',12)}Offline</span>`,maint:`<span class="pill warn">${I('warn',12)}Maintenance</span>`}[s]);
+const rcp=s=>({rec:`<span class="pill ok">${I('okc',12)}Recording</span>`,failed:`<span class="pill crit">${I('xc',12)}Failed</span>`,stop:`<span class="pill info">${I('alert',12)}Stopped</span>`}[s]);
+const tbl=(h,rows)=>`<div class="tw"><table class="xt"><thead><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+const card=(t,sub,body,id)=>`<section class="card" ${id?'id="sec-'+id+'"':''}><h2>${t}</h2>${sub?`<p class="cs">${sub}</p>`:''}<div class="cb">${body}</div></section>`;
+const lastRec=k=>k.rec==='rec'?'Now':k.rec==='failed'?'14 min ago':k.st==='offline'?(k.id==='CH05'?'2 min ago':'40 min ago'):'Yesterday, 18:00';
+function pageHead(p,sub,actions){const back=S.page!=='dashboard'?`<button class="ib" data-act="${PG[p][2]?'go':'goHome'}" ${PG[p][2]?'data-p="'+PG[p][2]+'"':''} aria-label="Back to ${PG[p][2]?PG[PG[p][2]][0]:'dashboard'}" title="Back">${I('arrowl',18)}</button>`:'';
+ return `<div class="dh" style="padding-bottom:14px"><div class="dh1"><div class="ttl">${back}<div><h1>${PG[p][0]}</h1>${sub?`<p>${sub}</p>`:''}</div></div><div class="tb">${actions||''}</div></div></div>`}
+function pageBody(){const p=S.page;
+ if(p==='live'){const n=S.liveCols;return [pageHead(p,CAMS.filter(c=>c.st==='online').length+' of '+CAMS.length+' cameras streaming. Select a camera to open it.',`<div class="seg" role="group" aria-label="Layout">${[[2,'2 × 2'],[3,'3 × 3'],[4,'4 × 4']].map(o=>`<button class="${n===o[0]?'on':''}" data-act="liveCols" data-v="${o[0]}">${o[1]}</button>`).join('')}</div>`),`<div class="livegrid c${n}">${CAMS.map((k,i)=>tile(k,i)).join('')}</div>`]}
+ if(p==='playback')return [pageHead(p,'Recording schedule and the latest footage for each camera.',`<button class="btn" data-act="proto" data-l="Export footage">${I('download',15)}Export footage</button>`),card('Recording schedule',CAMS.filter(c=>c.rec==='rec').length+' of '+CAMS.length+' cameras recording',tbl(['Channel','Name','Status','Schedule','Last recording',''],CAMS.map(k=>[k.id,esc(k.name),rcp(k.rec),k.sch,lastRec(k),k.rec==='stop'&&k.st!=='online'?'<span class="mut sm">No footage</span>':`<button class="btn sm" data-act="clip" data-id="${k.id}">${I('play',13)}Play</button>`])))];
+ if(p==='alarms'){let e=EV.slice();if(S.alFilter==='unack')e=e.filter(x=>!x.ack);if(S.alFilter==='crit')e=e.filter(x=>x.sev==='crit');const un=EV.filter(x=>!x.ack).length;
+  return [pageHead(p,un+' unacknowledged, '+EV.length+' in the last 2 hours',`<div class="seg" role="group" aria-label="Filter">${[['all','All'],['unack','Unacknowledged'],['crit','Critical']].map(o=>`<button class="${S.alFilter===o[0]?'on':''}" data-act="alFilter" data-v="${o[0]}">${o[1]}</button>`).join('')}</div>${un?`<button class="btn primary" data-act="ackAll">${I('check',15)}Acknowledge all</button>`:''}`),
+  card('Alarm log','Select an alarm to watch its clip.',e.length?tbl(['Severity','Type','Source','Time','Status',''],e.map(x=>[pill(x.sev),esc(x.type),esc(x.src),ago(x.at),x.ack?`<span class="acked">${I('check',13)}Acknowledged</span>`:`<button class="btn sm" data-act="ack" data-id="${x.id}">Acknowledge</button>`,`<button class="btn sm" data-act="event" data-id="${x.id}">${I('play',13)}View</button>`])):okEmpty('No alarms match','Try another filter.'))]}
+ if(p==='devices'){const on=CAMS.filter(x=>x.st==='online').length;
+  return [pageHead(p,'This NVR and the cameras connected to it.',`<button class="btn primary" data-act="proto" data-l="Add camera">${I('plus',15)}Add camera</button>`),
+  card('Matrix NVR Device','Recorder details','<div class="facts">'+[['Model','Matrix NVR (sample)'],['Firmware','v1.0.0 (sample)'],['IP address','192.168.1.20'],['MAC address','00:1B:09:4C:2E:7A'],['Uptime','14 d 6 h'],['Time sync','NTP synced'],['Channels in use',CAMS.length+' of '+TOTAL_CH],['Storage',stor().tot+' TB, 4 disks']].map(f=>`<div class="fact"><small>${f[0]}</small><b>${f[1]}</b></div>`).join('')+'</div>','device'),
+  card('Cameras',on+' online, '+(CAMS.length-on)+' need attention',tbl(['Channel','Name','Status','Recording','Bitrate','Availability',''],CAMS.map(k=>[k.id,esc(k.name),stp(k.st),rcp(k.rec),k.br?k.br+' Mbps':'No video',k.av.toFixed(1)+'%',`<button class="btn sm" data-act="camView" data-id="${k.id}">Open</button>`])),'cams')]}
+ if(p==='storage'){const s=stor();return [pageHead(p,'Capacity, disk health and how long footage is kept.'),
+  `<div class="cg">${card('Capacity',s.pct+'% used',`<div class="cw">${donut([{v:s.pct,col:lvlVar(s.pct)},{v:100-s.pct,col:'--bd'}],s.pct+'%','used')}<dl class="kv" style="flex:1;min-width:180px"><div><dt>Used</dt><dd>${s.used.toFixed(1)} of ${s.tot} TB</dd></div><div><dt>Free</dt><dd>${s.free.toFixed(1)} TB</dd></div><div><dt>Write rate</dt><dd>${sumBr().toFixed(0)} Mbps</dd></div></dl></div>`)}${card('Retention','Target set by the administrator',`<div class="big">${RET.have}<small> of ${RET.target} days kept</small></div><div class="bar" style="margin:12px 0"><i style="width:${RET.have/RET.target*100}%;background:var(--wnf)"></i></div><p class="mut sm">At the current write rate, the disks fill in ${RET.have} days, so the oldest 6 days are overwritten. Add a disk or lower bitrate on the busiest cameras to reach ${RET.target} days.</p>`)}</div>`,
+  card('Disks','1 needs attention',tbl(['Disk','Capacity','Used','Temperature','Power-on hours','Status'],DISKS.map(d=>['Disk '+d.n,d.cap+' TB',`<div style="display:flex;gap:8px;align-items:center;min-width:140px"><div class="bar" style="flex:1"><i style="width:${d.used}%;background:var(${lvlVar(d.used)})"></i></div>${d.used}%</div>`,d.temp+' °C',d.hrs.toLocaleString(),d.st==='ok'?pill('ok'):`<button class="pill warn" style="border:0;cursor:pointer" data-act="issue" data-id="a4">${I('warn',12)}Degraded</button>`])))]}
+ if(p==='users')return [pageHead(p,'People who can sign in to this NVR, and what they changed.'),
+  card('Users','Roles are assigned by an administrator',tbl(['Name','Username','Role','Last sign-in'],Object.entries(USERS).map(([u,x])=>[`<span style="display:inline-flex;gap:8px;align-items:center"><span class="av s">${initials(x.name)}</span>${esc(x.name)}</span>`,u,`<span class="pill info">${x.label}</span>`,x.name===S.user.name?'Just now':(()=>{const s=ACT.find(a=>a.who===x.name&&a.what==='signed in from');return s?ago(s.at):'Yesterday, 09:12'})()]))),
+  card('Audit log','Sign-ins and configuration changes',tbl(['When','User','Action'],ACT.map(a=>[ago(a.at),esc(a.who),esc(a.what+' '+a.obj)])),'audit')];
+ if(p==='settings'){const cur=NET.hist[NET.hist.length-1];return [pageHead(p,'System status, network and configuration.',`<button class="btn" data-act="proto" data-l="Back up configuration">${I('download',15)}Back up configuration</button>`),
+  `<div class="cg">${card('System status','CPU, memory and temperature against safe limits',meter('CPU',RES.cpu,'%',RES.cpu)+meter('Memory',RES.mem,'%',RES.mem)+meter('Temperature',RES.temp,' °C',RES.temp/80*100),'sys')}${card('Network','Incoming bandwidth from cameras',`<div class="big">${cur.toFixed(0)}<small> Mbps of ${NET.cap}</small></div><div style="margin:10px 0">${spark(NET.hist,300,56)}</div><dl class="kv"><div><dt>IP address</dt><dd>192.168.1.20</dd></div><div><dt>Gateway</dt><dd>192.168.1.1</dd></div><div><dt>DNS</dt><dd>192.168.1.1</dd></div></dl>`,'net')}</div>`,
+  card('Bandwidth by camera','Highest first',tbl(['Channel','Name','Bitrate','Share'],CAMS.filter(k=>k.br).sort((a,b)=>b.br-a.br).map(k=>[k.id,esc(k.name),k.br+' Mbps',(k.br/sumBr()*100).toFixed(0)+'%'])))]}
+ if(p==='reports'){const t=trendSvg('24h'),d=trendData('24h');return [pageHead(p,'Availability and event reports.',`<button class="btn" data-act="proto" data-l="Generate report">${I('file',15)}Generate report</button>`),
+  `<div class="cg">${card('Event report','Last 24 hours',`<div class="cw" style="margin-bottom:8px"><div class="big">${t.tot}<small> events</small></div>${trendLeg}</div>${t.svg}`,'events')}${card('Camera availability','Last 7 days, lowest first',tbl(['Channel','Name','Availability'],CAMS.slice().sort((a,b)=>a.av-b.av).map(k=>[k.id,esc(k.name),`<span style="color:var(${k.av<95?'--cc':k.av<99?'--wnc':'--tx'})">${k.av.toFixed(1)}%</span>`])),'avail')}</div>`,
+  card('Events by period','Critical, warning and info counts',tbl(['Period','Critical','Warning','Info'],d.out.map((o,i)=>[d.lab[i],o.c,o.w,o.i])))]}
+ return [pageHead(p,''),'']}
+function shell(){syncHide();let main;
+ if(S.page==='dashboard'){const d=activeDash();main=`${dashHead()}<div class="content">${S.tip?`<div class="hintbar">${I('info',18)}<span style="flex:1">Click any widget to show its actions: move, expand, duplicate, edit, resize or remove. Click it again, or press Esc, to hide them.</span><button class="ib" data-act="tipClose" aria-label="Dismiss tip">${I('x',16)}</button></div>`:''}${d.widgets.length?`<div class="grid">${d.widgets.map(widget).join('')}</div>`:empty()}</div>`}
+ else{const [h,...rest]=pageBody();main=`${h}<div class="content"><div class="pg">${rest.join('')}</div></div>`}
+ const navKey=PG[S.page][2]||S.page;
+ return `<div class="shell ${S.focus?'focus':''}"><nav class="rail" aria-label="Main">${NAV[S.user.role].map(k=>`<button class="nv ${k===navKey?'on':''}" data-act="go" data-p="${k}" ${k===navKey?'aria-current="page"':''}>${I(PG[k][1],20)}<span>${PG[k][0]}</span></button>`).join('')}<button class="nv demo-n" data-act="openDemo" title="Prototype tools">${I('cpu',20)}<span>Demo</span></button></nav>
+ <div class="main">${topbar()}${crumbs()}${strip()}${main}</div>${S.focus?`<button class="btn exitf" data-act="focus">${I('x',15)}Exit focus mode</button>`:''}</div>`}
+function render(){const app=$('#app'),c0=$('.content'),sc=c0?c0.scrollTop:0,a=document.activeElement,pg=S.page;
+ let sel=null;if(a&&a.dataset&&a.dataset.act&&app.contains(a))sel='[data-act="'+a.dataset.act+'"]'+(a.dataset.id?'[data-id="'+a.dataset.id+'"]':'')+(a.dataset.p?'[data-p="'+a.dataset.p+'"]':'');
+ app.innerHTML=S.user?shell():loginView();
+ const c=$('.content');if(c&&S._lastPage===pg)c.scrollTop=sc;S._lastPage=pg;
+ if(S.anchor){const el=$('#sec-'+S.anchor);if(el)el.scrollIntoView({block:'start'});S.anchor=null}
+ if(sel){const n=$(sel);if(n&&!n.disabled)n.focus({preventScroll:true})}
+ if(!S.user&&!sel){const l=$('#lu');if(l&&(!l.value||S.lg.eu))l.focus();else if($('#lp'))$('#lp').focus()}
+ if(S.flash){const el=$('[data-wid="'+S.flash+'"]');if(el){el.scrollIntoView({block:'nearest',behavior:'smooth'});el.classList.add('flash')}S.flash=null}
+ renderSheet()}
+
+/* ---------- Mobile side sheet ---------- */
+let sheetPrevFocus=null;
+function renderSheet(){const box=$('#sheet');if(!S.user){box.innerHTML='';return}
+ const navKey=PG[S.page][2]||S.page;
+ box.innerHTML=`<div class="sheet-scrim ${S.sheet?'open':''}" data-act="sheetClose" ${S.sheet?'':'hidden'}></div><aside id="sheetPanel" class="sheet ${S.sheet?'open':''}" role="dialog" aria-modal="true" aria-label="Main menu" ${S.sheet?'':'hidden'}>
+ <div class="sh-h">${LOGO(88)}<button class="ib" data-act="sheetClose" aria-label="Close menu">${I('x',20)}</button></div>
+ <div class="sh-u"><span class="av l">${initials(S.user.name)}</span><div><b>${esc(S.user.name)}</b><small>${S.user.label}</small></div></div>
+ <nav class="sh-n" aria-label="Main">${NAV[S.user.role].map(k=>`<button class="shi ${k===navKey?'on':''}" data-act="go" data-p="${k}" ${k===navKey?'aria-current="page"':''}>${I(PG[k][1],20)}${PG[k][0]}</button>`).join('')}
+ <div class="msep"></div><div class="mhd">Prototype tools</div>${demoItems().filter(i=>!i.sep).map(i=>`<button class="shi ${i.dng?'dng':''}" data-act="${i.a}">${I(i.ic,18)}${esc(i.l)}</button>`).join('')}</nav>
+ <div class="sh-f"><button class="shi" data-act="signOut">${I('logout',18)}Sign out</button></div></aside>`}
+function openSheet(){if(S.sheet)return;sheetPrevFocus=document.activeElement;S.sheet=true;closeMenu();renderSheet();document.body.classList.add('sheet-lock');
+ const p=$('#sheetPanel'),sc=$('.sheet-scrim');p.classList.remove('open');sc.classList.remove('open');void p.offsetWidth;p.classList.add('open');sc.classList.add('open');
+ const f=p.querySelector('.shi.on')||p.querySelector('.shi');if(f)f.focus({preventScroll:true});const hb=$('.hamb');if(hb)hb.setAttribute('aria-expanded','true')}
+function closeSheet(then){if(!S.sheet){if(then)then();return}const p=$('#sheetPanel'),sc=$('.sheet-scrim');
+ const done=()=>{S.sheet=false;document.body.classList.remove('sheet-lock');renderSheet();const hb=$('.hamb');if(hb)hb.setAttribute('aria-expanded','false');if(then)then();else if(sheetPrevFocus&&sheetPrevFocus.isConnected)sheetPrevFocus.focus()};
+ if(!p||RM()){done();return}p.style.transform='';p.classList.remove('open');sc.classList.remove('open');setTimeout(done,230)}
+let sw=null;
+document.addEventListener('pointerdown',e=>{const p=e.target.closest&&e.target.closest('#sheetPanel');if(!p||!S.sheet)return;sw={x:e.clientX,y:e.clientY,dx:0,p,on:false}});
+document.addEventListener('pointermove',e=>{if(!sw)return;const dx=e.clientX-sw.x,dy=e.clientY-sw.y;if(!sw.on&&Math.abs(dx)>8&&Math.abs(dx)>Math.abs(dy))sw.on=true;if(!sw.on)return;sw.dx=Math.min(0,dx);sw.p.style.transition='none';sw.p.style.transform=`translateX(${sw.dx}px)`});
+document.addEventListener('pointerup',()=>{if(!sw)return;const s=sw;sw=null;s.p.style.transition='';if(!s.on)return;if(s.dx<-s.p.offsetWidth*.3){justDragged=true;setTimeout(()=>{justDragged=false},60);closeSheet()}else s.p.style.transform=''});
+addEventListener('resize',()=>{if(S.sheet&&innerWidth>700)closeSheet()});
+
+/* ---------- Drawers ---------- */
+function renderDrawer(){const d=$('#drawer');document.body.classList.toggle('dopen',!!S.drawer);
+ d.innerHTML=!S.drawer?'':S.drawer==='lib'?libHTML():S.drawer==='cfg'?cfgHTML():S.drawer==='dset'?dsetHTML():attHTML()}
+function closeDrawer(){S.drawer=null;S.cfg=null;S.dset=null;renderDrawer();syncUpd()}
+const libAvail=()=>Object.keys(WT).filter(t=>WT[t].roles.includes(S.user.role));
+function libList(){const q=S.lib.q.trim().toLowerCase(),cat=S.lib.cat;
+ const l=libAvail().filter(t=>(cat==='All'||WT[t].c===cat)&&(!q||(WT[t].n+' '+WT[t].d+' '+WT[t].q).toLowerCase().includes(q)));
+ if(!l.length)return `<div class="er">${I('list',28)}<b>No widgets match "${esc(S.lib.q)}"</b>Try a different word, or clear the search to see everything.</div>`;
+ return l.map(t=>{const T=WT[t],n=activeDash().widgets.filter(w=>w.type===t).length;
+  return `<div class="lc"><span class="lci">${I(T.ic,20)}</span><div style="flex:1;min-width:0"><b>${T.n}</b><p>${T.d}</p><em>Answers: ${T.q}</em></div><div style="text-align:right"><button class="btn sm" data-act="libAdd" data-t="${t}" aria-label="Add ${T.n}">${I('plus',14)}Add</button>${n?`<div class="sm mut" style="margin-top:4px">${n} on this dashboard</div>`:''}</div></div>`}).join('')}
+const libCats=()=>['All'].concat(CATS).map(c=>`<button class="cat ${S.lib.cat===c?'on':''}" data-act="libCat" data-c="${c}">${c}</button>`).join('');
+function libHTML(){return `<aside class="drawer" role="dialog" aria-label="Widget library"><div class="dr-h"><div><h2>Add widget</h2><p>${libAvail().length} widgets available for the ${S.user.label} role</p></div><button class="ib" data-act="closeDrawer" aria-label="Close">${I('x',18)}</button></div>
+ <div class="dr-s"><input id="libq" class="inp" type="search" placeholder="Search widgets, for example storage" aria-label="Search widgets" value="${esc(S.lib.q)}"></div>
+ <div class="dr-c" id="libcats">${libCats()}</div><div class="dr-b" id="liblist">${libList()}</div><div class="dr-f"><span style="flex:1">Added widgets appear on the dashboard behind this panel.</span><button class="btn primary" data-act="closeDrawer">Done</button></div></aside>`}
+function cfgHTML(){const w=activeDash().widgets.find(x=>x.id===S.cfg.id),t=WT[w.type],v=S.cfg.vals;
+ const f=t.schema.filter(s=>!s.roles||s.roles.includes(S.user.role)).map(s=>{
+  if(s.t==='seg')return `<div class="lbl">${s.l}</div><div class="seg" role="group" aria-label="${s.l}">${s.o.map(o=>`<button type="button" class="${String(v[s.k])===String(o[0])?'on':''}" data-act="cfgSeg" data-k="${s.k}" data-v="${o[0]}">${o[1]}</button>`).join('')}</div>`;
+  if(s.t==='chk')return `<label class="chk mc" style="margin-top:14px"><input type="checkbox" id="cfg-${s.k}" data-cfgk="${s.k}" ${v[s.k]?'checked':''}>${s.l}</label>`;
+  return `<div class="lbl">${s.l}</div>${s.o().map(o=>`<label class="chk mc"><input type="checkbox" id="cfg-${s.k}-${o[0]}" data-cfgm="${s.k}" data-max="${s.max||0}" value="${o[0]}" ${(v[s.k]||[]).includes(o[0])?'checked':''}>${o[1]}</label>`).join('')}<div class="err" id="cfgerr"></div>`}).join('');
+ return `<aside class="drawer" role="dialog" aria-label="Widget settings"><div class="dr-h"><div><h2>${esc(t.n)} settings</h2><p>Changes apply to this widget only.</p></div><button class="ib" data-act="cfgCancel" aria-label="Close">${I('x',18)}</button></div>
+ <div class="dr-b"><label class="lbl" for="cfgtitle" style="margin-top:6px">Widget title</label><input id="cfgtitle" class="inp" maxlength="40" placeholder="${esc(t.n)}" value="${esc(S.cfg.title)}">${f}${t.schema.length?'':`<p class="mut" style="margin-top:14px">This widget has no other settings. Use the width control on the widget to resize it.</p>`}</div>
+ <div class="dr-f"><button class="btn ghost" data-act="cfgReset">Reset to defaults</button><span class="sp"></span><button class="btn" data-act="cfgCancel">Cancel</button><button class="btn primary" data-act="cfgApply">Apply</button></div></aside>`}
+function dsetHTML(){const s=S.dset;
+ return `<aside class="drawer" role="dialog" aria-label="Dashboard settings"><div class="dr-h"><div><h2>Dashboard settings</h2><p>These settings apply to this dashboard only.</p></div><button class="ib" data-act="closeDrawer" aria-label="Close">${I('x',18)}</button></div>
+ <div class="dr-b"><label class="lbl" for="dsname" style="margin-top:6px">Dashboard name</label><input id="dsname" class="inp" maxlength="30" autocomplete="off" value="${esc(s.name)}"><div class="hint"><span class="err" id="dserr"></span><span id="dsct">${s.name.length}/30</span></div>
+ <div class="lbl">Auto-refresh</div><div class="seg" role="group" aria-label="Auto-refresh interval">${[[0,'Off'],[15,'15 s'],[30,'30 s'],[60,'1 min'],[300,'5 min']].map(o=>`<button type="button" class="${s.refresh===o[0]?'on':''}" data-act="dsSeg" data-v="${o[0]}">${o[1]}</button>`).join('')}</div>
+ <p class="hlp">How often the widgets on this dashboard update by themselves. It pauses while you edit a widget or have a panel open, and you can always refresh by hand.</p>
+ <label class="chk mc" style="margin-top:20px"><input type="checkbox" id="dsdef" ${s.def?'checked':''} ${s.wasDef?'disabled':''}>Open this dashboard first when I sign in</label>${s.wasDef?'<p class="hlp" style="margin-top:0">This is already your default. To change it, set another dashboard as default.</p>':''}</div>
+ <div class="dr-f"><span class="sp"></span><button class="btn" data-act="closeDrawer">Cancel</button><button class="btn primary" data-act="dsSave">Save settings</button></div></aside>`}
+function attHTML(){const a=attItems();
+ return `<aside class="drawer" role="dialog" aria-label="Open issues"><div class="dr-h"><div><h2>Open issues</h2><p>${a.length} for the ${S.user.label} role, most severe first. Select an issue to review it.</p></div><button class="ib" data-act="closeDrawer" aria-label="Close">${I('x',18)}</button></div><div class="dr-b">${a.length?a.map(i=>`<div class="lr isr" data-act="issue" data-id="${i.id}" role="button" tabindex="0" style="padding-left:6px;padding-right:6px"><div class="lm">${pill(i.sev)}</div><div class="lg"><b>${esc(i.title)}</b><small>${esc(i.src)}, ${ago(i.at)}</small></div><span style="color:var(--tx3)">${I(ISS[i.id].media==='still'?'image':ISS[i.id].media==='clip'?'play':'file',16)}</span>${I('right',16)}</div>`).join(''):okEmpty('No open issues','Everything you monitor is running normally.')}</div></aside>`}
+
+/* ---------- Simulated camera imagery (canvas) ---------- */
+const pad2=n=>String(n).padStart(2,'0');
+const stamp=ms=>{const d=new Date(ms);return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+' '+pad2(d.getHours())+':'+pad2(d.getMinutes())+':'+pad2(d.getSeconds())};
+function drawScene(cv,o){const ctx=cv.getContext('2d'),W=cv.width,H=cv.height,t=o.t||0,h=(o.seed||0)*17%40;
+ const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,`hsl(${200+h},18%,${o.indoor?30:38}%)`);g.addColorStop(.55,`hsl(${200+h},14%,${o.indoor?36:52}%)`);g.addColorStop(.551,`hsl(${210+h},8%,26%)`);g.addColorStop(1,`hsl(${210+h},8%,14%)`);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+ ctx.fillStyle=`hsl(${205+h},10%,32%)`;ctx.fillRect(W*.05,H*.2,W*.3,H*.35);ctx.fillStyle=`hsl(${205+h},10%,40%)`;ctx.fillRect(W*.6,H*.12,W*.33,H*.43);
+ ctx.fillStyle='rgba(255,236,170,.35)';for(let r=0;r<3;r++)for(let c=0;c<4;c++)ctx.fillRect(W*(.63+c*.075),H*(.17+r*.11),W*.04,H*.06);
+ ctx.strokeStyle='rgba(255,255,255,.28)';ctx.lineWidth=2;for(let i=-3;i<=3;i++){ctx.beginPath();ctx.moveTo(W/2+i*W*.035,H*.56);ctx.lineTo(W/2+i*W*.3,H);ctx.stroke()}
+ if(o.subject){const p=(t%o.dur)/o.dur,x=W*(.12+.7*p),y=H*.6+H*.06*Math.sin(p*Math.PI*2),pw=W*.035,ph=H*.22;
+  ctx.fillStyle='#1e2428';ctx.beginPath();ctx.arc(x+pw/2,y,pw*.42,0,7);ctx.fill();ctx.fillRect(x,y+pw*.4,pw,ph*.55);ctx.fillRect(x+pw*.1,y+pw*.4+ph*.55,pw*.32,ph*.4);ctx.fillRect(x+pw*.58,y+pw*.4+ph*.55,pw*.32,ph*.4);
+  ctx.strokeStyle='#ff5a5f';ctx.lineWidth=3;ctx.strokeRect(x-pw*.5,y-pw*.7,pw*2,ph+pw*.6);ctx.fillStyle='#ff5a5f';ctx.fillRect(x-pw*.5,y-pw*.7-22,118,22);ctx.fillStyle='#fff';ctx.font='600 14px Inter,Arial,sans-serif';ctx.fillText('Person 94%',x-pw*.5+6,y-pw*.7-6)}
+ if(o.line){ctx.strokeStyle='#fbbf24';ctx.setLineDash([12,8]);ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(W*.2,H*.8);ctx.lineTo(W*.85,H*.66);ctx.stroke();ctx.setLineDash([])}
+ if(o.gray){ctx.globalCompositeOperation='saturation';ctx.fillStyle='#888';ctx.fillRect(0,0,W,H);ctx.globalCompositeOperation='source-over';ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(0,0,W,H)}
+ if(o.tamper&&o.subject){const k=((t%o.dur)/o.dur);if(k>.55){ctx.fillStyle=`rgba(20,20,20,${Math.min(.92,(k-.55)*3)})`;ctx.fillRect(0,0,W,H)}}
+ const lbl=o.label+'   '+stamp(o.base+t*1000);ctx.font='600 18px Inter,Arial,sans-serif';const tw=ctx.measureText(lbl).width;ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(12,12,tw+20,32);ctx.fillStyle='#fff';ctx.fillText(lbl,22,34);
+ if(o.rec){ctx.fillStyle=Math.floor(t*2)%2?'#ff5a5f':'rgba(255,90,95,.4)';ctx.beginPath();ctx.arc(W-70,28,7,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.fillText(o.live?'LIVE':'REC',W-56,34)}
+ if(o.banner){ctx.font='700 34px Inter,Arial,sans-serif';const bw=ctx.measureText(o.banner).width;ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(W/2-bw/2-24,H/2-34,bw+48,62);ctx.fillStyle='#fff';ctx.fillText(o.banner,W/2-bw/2,H/2+10)}}
+function mountMedia(box,o){const cv=document.createElement('canvas');cv.width=960;cv.height=540;box.querySelector('.media').appendChild(cv);
+ let t=0,playing=!o.still&&!RM(),last=0;const ctl=box.querySelector('.pc');const rng=ctl&&ctl.querySelector('input'),pp=ctl&&ctl.querySelector('.pp'),pt=ctl&&ctl.querySelector('.pt');
+ const fmt=s=>pad2(Math.floor(s/60))+':'+pad2(Math.floor(s%60));
+ const sync=()=>{if(rng){rng.value=Math.round(t*10)}if(pt)pt.textContent=o.live?'Live':fmt(t)+' / '+fmt(o.dur);if(pp){pp.innerHTML=I(playing?'pause':'play',16);pp.setAttribute('aria-label',playing?'Pause':'Play')}};
+ if(pp)pp.onclick=()=>{if(!o.live&&t>=o.dur)t=0;playing=!playing;sync()};
+ if(rng)rng.oninput=()=>{t=rng.value/10;playing=false;drawScene(cv,Object.assign({},o,{t}));sync()};
+ const frame=ts=>{if(!cv.isConnected)return;const dt=last?(ts-last)/1000:0;last=ts;if(playing){t+=dt;if(t>=o.dur){if(o.live)t=0;else{t=o.dur;playing=false}}}drawScene(cv,Object.assign({},o,{t}));sync();requestAnimationFrame(frame)};
+ drawScene(cv,Object.assign({},o,{t}));sync();if(!o.still)requestAnimationFrame(frame)}
+const mediaHTML=(o,cap)=>`<div class="mbox"><div class="media"></div>${o.still?'':`<div class="pc"><button class="ib pp" aria-label="Play">${I('play',16)}</button>${o.live?'<span class="pill crit" style="background:var(--cb)"><span class="rdot"></span>Live</span><span class="sp"></span>':`<input type="range" min="0" max="${o.dur*10}" value="0" aria-label="Seek">`}<span class="pt"></span></div>`}${cap?`<div class="mcap">${cap}</div>`:''}</div>`;
+
+/* ---------- Issue & event viewer ---------- */
+const ISS={
+ a1:{media:'still',sum:'CH05 stopped sending video 2 minutes ago. The NVR can still reach its switch port, so camera power or the cable at the gate is the most likely cause.',impact:'Nothing at the main gate is being recorded until the camera is back.',steps:['Check PoE power on switch port 5.','Reseat or replace the network cable at the gate.','Reboot the camera from Devices.'],go:['Open devices','devices'],cap:'Last frame received before the signal was lost.'},
+ a2:{media:'clip',sum:'CH09 is online, but the NVR could not write its stream to disk for the last 14 minutes. The clip is the last footage saved before recording stopped.',impact:'Activity at the loading dock since the failure is not stored.',steps:['Check Disk 2, which reports a SMART warning.','Restart recording from the recording schedule.','If it fails again, move CH09 to another disk group.'],go:['Open recording schedule','playback'],cap:'Last 12 seconds recorded before the write failure.'},
+ a3:{media:'still',sum:'CH11 has been offline for 40 minutes. Its last frames show no obstruction, so a network or power fault is likely.',impact:'Corridor 1F is not being recorded.',steps:['Check the switch on floor 1.','Confirm the camera has power.','Reboot the camera from Devices.'],go:['Open devices','devices'],cap:'Last frame received before the signal was lost.'},
+ a4:{media:'disk',sum:'Disk 2 reports a rising count of reallocated sectors. It still records, but it is likely to fail in the coming weeks.',impact:'If Disk 2 fails, footage stored on it (about a quarter of all recordings) is lost.',steps:['Order a replacement 3 TB surveillance disk.','Plan the swap during a quiet hour.','Keep an eye on its temperature, currently 46 °C.'],go:['Open disk manager','storage']},
+ a5:{media:'ret',sum:'The NVR keeps 24 days of footage, but the target is 30 days. At the current write rate of '+sumBr().toFixed(0)+' Mbps the disks fill sooner than planned.',impact:'Footage older than 24 days is overwritten, which may break your retention policy.',steps:['Add a disk to increase capacity.','Lower the bitrate on the busiest cameras (CH06, CH07).','Switch low-priority cameras to motion recording.'],go:['Manage storage','storage']}};
+function issueMedia(i){const c=i.cam&&camOf(i.cam),x=ISS[i.id],seed=CAMS.indexOf(c);
+ if(x.media==='still')return {o:{still:true,label:c.id+' '+c.name,base:i.at-4000,t:0,gray:true,banner:'SIGNAL LOST',seed},cap:x.cap};
+ if(x.media==='clip')return {o:{dur:12,label:c.id+' '+c.name,base:i.at-12000,subject:true,rec:true,seed},cap:x.cap};
+ return null}
+function sidePanel(i){const x=ISS[i.id];
+ if(x.media==='disk'){const d=DISKS[1];return `<div class="panelbox"><h4>Disk 2 health</h4><div class="mt"><div class="mrow"><span>Used</span><b>${d.used}%</b></div><div class="bar"><i style="width:${d.used}%;background:var(--wnf)"></i></div></div>${tbl(['SMART attribute','Value','Threshold'],[['Reallocated sectors','<b style="color:var(--wnc)">112</b>','36'],['Pending sectors','8','0'],['Temperature','46 °C','55 °C'],['Power-on hours',d.hrs.toLocaleString(),'—']])}</div>`}
+ const s=stor();return `<div class="panelbox"><h4>Retention</h4><div class="big">${RET.have}<small> of ${RET.target} days kept</small></div><div class="bar" style="margin:12px 0"><i style="width:${RET.have/RET.target*100}%;background:var(--wnf)"></i></div><dl class="kv"><div><dt>Capacity</dt><dd>${s.tot} TB</dd></div><div><dt>Used</dt><dd>${s.used.toFixed(1)} TB</dd></div><div><dt>Write rate</dt><dd>${sumBr().toFixed(0)} Mbps</dd></div></dl></div>`}
+function openIssue(id){closeMenu();const list=attItems(),i=list.find(x=>x.id===id)||ATT.find(x=>x.id===id),x=ISS[i.id],idx=list.indexOf(i),m=issueMedia(i);
+ const left=m?mediaHTML(m.o,m.cap):sidePanel(i);
+ modal({title:i.title+' · '+i.src.split(',')[0],w:980,kind:'issue',body:`<div class="iv-meta">${pill(i.sev)}<span>${esc(i.src)}</span><span>·</span><span>Detected ${ago(i.at)} (${tm(i.at)})</span></div><div class="iv"><div>${left}</div><div><h4>Summary</h4><p class="sum">${x.sum}</p><h4>Impact</h4><p class="sum" style="color:var(--tx2)">${x.impact}</p><h4>Suggested next steps</h4><ol>${x.steps.map(s=>`<li>${s}</li>`).join('')}</ol></div></div>`,
+  pre:idx>=0&&list.length>1?`<span class="nav-n"><button class="ib" data-act="issueNav" data-d="-1" aria-label="Previous issue" ${idx===0?'disabled':''}>${I('left',16)}</button>${idx+1} of ${list.length}<button class="ib" data-act="issueNav" data-d="1" aria-label="Next issue" ${idx===list.length-1?'disabled':''}>${I('right',16)}</button></span>`:'',
+  btns:[{label:'Close',cls:'ghost',fn:()=>{}},{label:x.go[0],cls:'primary',fn:()=>{A.go({p:x.go[1]})}}],after:()=>{if(m)mountMedia($('#modal .mbox'),m.o)}});S.issueId=i.id}
+function openEvent(id){closeMenu();const e=EV.find(x=>x.id===+id);if(!e)return;const c=camOf(e.cam),seed=CAMS.indexOf(c);
+ const o={dur:12,label:c.id+' '+c.name,base:e.at-6000,subject:e.type!=='Alarm input 2'||true,rec:true,seed,line:e.type==='Line crossing',tamper:e.type==='Tamper',indoor:/Lobby|Server|Corridor|Warehouse/.test(c.name)};
+ const sum={Intrusion:'A person entered the protected zone while the area was armed.',Tamper:'The camera view was blocked or moved. The image darkens at the end of the clip when the lens was covered.',"Line crossing":'An object crossed the virtual line in the direction set for this camera.',Motion:'Motion was detected inside the active area.',"Alarm input 2":'The door contact on alarm input 2 opened. The clip is from the nearest camera.'}[e.type];
+ modal({title:e.type+' · '+e.src,w:900,body:`<div class="iv-meta">${pill(e.sev)}<span>${tm(e.at)}, ${ago(e.at)}</span><span>·</span><span>${e.ack?'Acknowledged':'Not acknowledged'}</span></div><div class="iv"><div>${mediaHTML(o,'Clip from 6 seconds before to 6 seconds after the alarm.')}</div><div><h4>What happened</h4><p class="sum">${sum}</p><dl class="kv"><div><dt>Camera</dt><dd>${c.id} ${esc(c.name)}</dd></div><div><dt>Rule</dt><dd>${e.type}</dd></div><div><dt>Severity</dt><dd>${{crit:'Critical',warn:'Warning',info:'Info'}[e.sev]}</dd></div></dl></div></div>`,
+  btns:[{label:'Close',cls:'ghost',fn:()=>{}},{label:'Export clip',cls:'',fn:()=>{say('proto',{l:'Export clip'});return false}}].concat(e.ack?[]:[{label:'Acknowledge',cls:'primary',fn:()=>{e.ack=true;render()}}]),after:()=>mountMedia($('#modal .mbox'),o)})}
+function openCam(id){closeMenu();const c=camOf(id),seed=CAMS.indexOf(c),on=c.st==='online';
+ const o=on?{dur:20,live:true,label:c.id+' '+c.name,base:Date.now(),subject:seed%3===0,rec:true,seed,indoor:/Lobby|Server|Corridor|Warehouse|Reception|Stairwell|Cafeteria/.test(c.name)}:{still:true,label:c.id+' '+c.name,base:Date.now()-120000,gray:true,banner:c.st==='offline'?'NO SIGNAL':'MAINTENANCE',seed};
+ modal({title:c.id+' '+c.name,w:860,body:`<div class="iv-meta">${stp(c.st)}${rcp(c.rec)}<span>${c.br?c.br+' Mbps':'No video'}</span><span>·</span><span>${c.sch}</span></div>${mediaHTML(o,on?'Simulated live stream.':'Last frame before the camera went offline.')}`,
+  btns:[{label:'Close',cls:'ghost',fn:()=>{}},{label:'Play recordings',cls:'primary',fn:()=>{A.go({p:'playback'})}}],after:()=>mountMedia($('#modal .mbox'),o)})}
+function openClip(id){const c=camOf(id),seed=CAMS.indexOf(c),o={dur:30,label:c.id+' '+c.name,base:Date.now()-(c.rec==='failed'?14*60000:30000)-30000,subject:true,rec:true,seed};
+ modal({title:'Playback · '+c.id+' '+c.name,w:860,body:`<div class="iv-meta">${rcp(c.rec)}<span>${c.sch}</span></div>${mediaHTML(o,c.rec==='failed'?'Last 30 seconds recorded before the write failure.':'Latest 30 seconds of recorded footage.')}`,
+  btns:[{label:'Close',cls:'ghost',fn:()=>{}},{label:'Export footage',cls:'primary',fn:()=>{say('proto',{l:'Export footage'});return false}}],after:()=>mountMedia($('#modal .mbox'),o)})}
+
+/* ---------- Menus, modals, toasts ---------- */
+function closeMenu(){$('#menu').innerHTML=''}
+function openMenu(anchor,items,w){const m=$('#menu'),html=typeof items==='string'?items:items.map(i=>i.sep?'<div class="msep"></div>':i.hd?`<div class="mhd">${esc(i.hd)}</div>`:`<button class="mi ${i.dng?'dng':''} ${i.on?'on':''}" role="menuitem" data-act="${i.a}" ${i.id?'data-id="'+i.id+'"':''} ${i.d||''} ${i.dis?'disabled':''}>${i.sw||I(i.ic,16)}<span style="flex:1">${esc(i.l)}${i.h?`<small>${esc(i.h)}</small>`:''}</span>${i.on?`<span class="ck">${I('check',16)}</span>`:''}</button>`).join('');
+ m.innerHTML=`<div class="menu" role="menu" style="visibility:hidden;${w?'width:'+w+'px;max-width:calc(100vw - 16px)':''}">${html}</div>`;const el=m.firstChild,r=anchor.getBoundingClientRect();
+ let x=Math.min(Math.max(8,r.right-el.offsetWidth),innerWidth-el.offsetWidth-8);if(anchor.closest('.crumbs,.tabs'))x=Math.min(Math.max(8,r.left),innerWidth-el.offsetWidth-8);
+ let y=r.bottom+6;if(y+el.offsetHeight>innerHeight-8)y=Math.max(8,r.top-el.offsetHeight-6);
+ el.style.left=x+'px';el.style.top=y+'px';el.style.visibility='visible';const f=el.querySelector('.mi:not(:disabled)');if(f)f.focus({preventScroll:true})}
+function modal(o){S.modal=o;$('#modal').innerHTML=`<div class="scrim" data-act="mscrim"><div class="modal" role="dialog" aria-modal="true" aria-label="${esc(o.title)}" style="max-width:${o.w||460}px"><div class="mh"><h2>${esc(o.title)}</h2><button class="ib" data-act="mclose" aria-label="Close">${I('x',18)}</button></div><div class="mb">${o.body}</div><div class="mf">${o.pre||''}${o.btns.map((b,i)=>`<button class="btn ${b.cls||''}" data-mi="${i}">${esc(b.label)}</button>`).join('')}</div></div></div>`;
+ if(o.after)o.after();const f=$('#modal input[type=text]')||$('#modal input[type=password]')||$('#modal .btn.primary')||$('#modal .mf .btn');if(f)f.focus()}
+function syncUpd(){const u=$('#upd');if(u)u.textContent=updText()}
+function closeModal(){S.modal=null;S.issueId=null;setTimeout(syncUpd,0);$('#modal').innerHTML=''}
+/* Toast policy: errors, new alarms, connection changes, blocked actions, actions with Undo, and results that happen out of view. Destructive actions use the "del" style. */
+const TI={ok:'okc',info:'info',warn:'warn',err:'xc',del:'trash'},TMS={ok:4500,info:4500,warn:7000,err:9000,del:8000},tdata={};
+const U=fn=>({act:{label:'Undo',fn}});
+function removeToast(id,instant){const t=tdata[id],el=$('#t'+id);if(t){clearTimeout(t.timer);delete tdata[id]}if(!el)return;if(instant){el.remove();return}el.classList.add('out');setTimeout(()=>el.remove(),170)}
+function armToast(id){const t=tdata[id];if(!t||t.sticky)return;clearTimeout(t.timer);t.start=Date.now();t.timer=setTimeout(()=>removeToast(id),t.rem)}
+function holdToast(id){const t=tdata[id];if(!t||t.sticky)return;clearTimeout(t.timer);t.rem=Math.max(800,t.rem-(Date.now()-t.start))}
+function placeToasts(){const box=$('#toasts'),c=$('.content');box.style.top=(c&&innerWidth>700)?Math.max(64,Math.round(c.getBoundingClientRect().top)+10)+'px':'8px'}
+function notify(o){const box=$('#toasts');placeToasts();
+ if(o.key){const ex=box.querySelector('[data-key="'+o.key+'"]');if(ex)removeToast(ex.id.slice(1),true)}
+ const id=++tid,el=document.createElement('div'),ms=o.ms||TMS[o.type];el.className='toast '+o.type;el.id='t'+id;if(o.key)el.dataset.key=o.key;el.setAttribute('role',o.type==='err'?'alert':'status');
+ el.innerHTML=`${I(o.icon||TI[o.type],16)}<div class="tbd"><b>${esc(o.title)}</b>${o.msg?`<span>${esc(o.msg)}</span>`:''}</div>${o.act?`<button class="tbtn" data-act="tact" data-id="${id}">${esc(o.act.label)}</button>`:''}<button class="tx" data-act="tclose" data-id="${id}" aria-label="Dismiss notification">${I('x',16)}</button>${o.sticky?'':`<span class="tpb" style="--d:${ms}ms"></span>`}`;
+ box.prepend(el);tdata[id]={act:o.act,sticky:!!o.sticky,rem:ms,start:0,timer:0};
+ el.addEventListener('mouseenter',()=>holdToast(id));el.addEventListener('mouseleave',()=>armToast(id));
+ while(box.children.length>3)removeToast(box.lastChild.id.slice(1),true);armToast(id)}
+function announce(m){const s=$('#sr');if(s){s.textContent='';setTimeout(()=>{s.textContent=m},30)}}
+const MSG={
+ dashDeleted:d=>({type:'del',title:'Dashboard deleted',msg:'"'+d.name+'" and its '+d.n+' widget'+(d.n===1?' were':'s were')+' permanently removed.'}),
+ dashMax:()=>({type:'warn',title:'Dashboard limit reached',msg:'You can have up to '+MAXD+' dashboards. Delete one to add another.'}),
+ layoutReset:d=>({type:'del',icon:'undo',title:'Layout replaced',msg:d.n+' widgets were replaced with the default layout for your role.'}),
+ layoutCleared:d=>({type:'del',title:'All widgets removed',msg:d.n+' widgets were removed from "'+d.dash+'".'}),
+ widgetRemoved:d=>({type:'del',title:'Widget removed',msg:d.name+' was removed from this dashboard.'}),
+ tplApplied:d=>({type:'del',icon:'undo',title:'Widgets replaced',msg:'Your '+d.old+' widgets were replaced by the "'+d.name+'" template.'}),
+ widgetCopied:d=>({type:'ok',title:'Widget copied',msg:d.name+' was added to "'+d.dash+'".'}),
+ ackAll:d=>({type:'ok',title:d.n+' alarm'+(d.n===1?'':'s')+' acknowledged',msg:'They are marked as handled for all users.'}),
+ newAlarm:d=>({type:'err',icon:'bell',title:'New critical alarm',msg:d.type+', '+d.src+'.'}),
+ offline:()=>({type:'err',icon:'wifioff',title:'Connection to the NVR lost',msg:'Widgets show the last data received and are marked stale.',key:'conn',sticky:true}),
+ online:()=>({type:'ok',icon:'wifi',title:'Reconnected',msg:'Live data from the NVR is flowing again.',key:'conn'}),
+ refreshFail:()=>({type:'err',title:"Couldn't refresh",msg:"The NVR didn't respond. Showing the last data received.",key:'rfail'}),
+ widgetError:d=>({type:'err',title:"Couldn't load "+d.name,msg:"The NVR didn't return this data."}),
+ needWidget:()=>({type:'info',title:'No widget to test',msg:'Add a widget first to see its error state.'}),
+ dataReset:d=>({type:'del',title:'Dashboards reset',msg:d.n+' custom dashboard'+(d.n===1?' was':'s were')+' deleted. Your role default is restored.'}),
+ pwChanged:()=>({type:'ok',icon:'lock',title:'Password changed',msg:'Use the new password the next time you sign in.'}),
+ storageFail:()=>({type:'warn',title:"Changes can't be saved to this browser",msg:'They will be kept until you close this tab.',key:'store'}),
+ proto:d=>({type:'info',title:'Not part of this prototype',msg:'"'+d.l+'" opens a separate workflow in the product.',key:'proto'})};
+function say(k,d,extra){notify(Object.assign(MSG[k](d||{}),extra||{}))}
+
+/* ---------- Dashboard operations ---------- */
+function nameErr(nm,ex){if(!nm)return 'Enter a dashboard name';if(S.dashboards.some(d=>d.id!==ex&&d.name.toLowerCase()===nm.toLowerCase()))return 'You already have a dashboard with this name. Choose another name.';return ''}
+function showErr(m){const i=$('#dn');$('#dnerr').textContent=m;i.classList.add('bad');i.focus()}
+function uniqueName(b){let n=b,i=2;while(S.dashboards.some(d=>d.name.toLowerCase()===n.toLowerCase()))n=b+' '+(i++);return n}
+const tplFor=()=>TPL.filter(t=>roleW(t.w).length>=2);
+function openNew(){if(S.dashboards.length>=MAXD){say('dashMax');return}const tp=tplFor();
+ modal({title:'New dashboard',body:`<label class="lbl" for="dn" style="margin-top:6px">Dashboard name</label><input id="dn" type="text" class="inp" maxlength="30" placeholder="For example: Night shift monitoring" autocomplete="off"><div class="hint"><span class="err" id="dnerr"></span><span id="dnct">0/30</span></div>
+ <div class="lbl">Start with</div>
+ <label class="opt"><input type="radio" name="start" value="blank" checked><div><b>A blank dashboard</b><span>Add widgets one at a time from the library.</span></div></label>
+ <label class="opt"><input type="radio" name="start" value="tpl"><div style="flex:1"><b>A template</b><span>Pre-arranged widgets for a common task.</span><select id="tplsel" class="inp" aria-label="Template">${tp.map(t=>`<option value="${t.id}">${t.n}</option>`).join('')}</select></div></label>
+ <label class="opt"><input type="radio" name="start" value="copy"><div><b>A copy of "${esc(activeDash().name)}"</b><span>Same widgets and settings, which you can then change.</span></div></label>`,
+ btns:[{label:'Cancel',cls:'ghost',fn:()=>{}},{label:'Create dashboard',cls:'primary',fn:()=>{const nm=$('#dn').value.trim(),er=nameErr(nm);if(er){showErr(er);return false}
+  const st=$('input[name=start]:checked').value,d={id:uid(),name:nm,isDefault:false,widgets:[]};
+  if(st==='tpl'){const t=TPL.find(x=>x.id===$('#tplsel').value);d.widgets=roleW(t.w)}
+  if(st==='copy')d.widgets=clone(activeDash().widgets).map(w=>Object.assign(w,{id:uid()}));
+  S.dashboards.push(d);S.activeId=d.id;S.page='dashboard';persist();render();announce('Dashboard '+nm+' created')}}]})}
+function nameModal(title,cta,val,ex,ok){modal({title,body:`<label class="lbl" for="dn" style="margin-top:6px">Dashboard name</label><input id="dn" type="text" class="inp" maxlength="30" value="${esc(val)}" autocomplete="off"><div class="hint"><span class="err" id="dnerr"></span><span id="dnct">${val.length}/30</span></div>`,btns:[{label:'Cancel',cls:'ghost',fn:()=>{}},{label:cta,cls:'primary',fn:()=>{const nm=$('#dn').value.trim(),er=nameErr(nm,ex);if(er){showErr(er);return false}ok(nm)}}]});$('#dn').select()}
+function openTemplates(){const tp=tplFor();modal({title:'Start from a template',w:520,body:`<p>Templates add a ready-made set of widgets that you can rearrange or remove. Only widgets available for your role are included.</p><div class="tg">${tp.map(t=>`<div class="tpl"><div><b>${t.n}</b><span>${t.d} ${roleW(t.w).length} widgets.</span></div><button class="btn sm primary" data-act="useTpl" data-id="${t.id}">Use template</button></div>`).join('')}</div>`,btns:[{label:'Cancel',cls:'ghost',fn:()=>{}}]})}
+function openPassword(){modal({title:'Change password',body:`<label class="lbl" for="pw0" style="margin-top:6px">Current password</label><input id="pw0" type="password" class="inp" autocomplete="current-password"><label class="lbl" for="pw1">New password</label><input id="pw1" type="password" class="inp" autocomplete="new-password"><p class="hlp" style="margin-top:4px">At least 8 characters, with a number and a symbol.</p><label class="lbl" for="pw2">Confirm new password</label><input id="pw2" type="password" class="inp" autocomplete="new-password"><div class="err" id="pwerr"></div>`,
+ btns:[{label:'Cancel',cls:'ghost',fn:()=>{}},{label:'Change password',cls:'primary',fn:()=>{const a=$('#pw0').value,b=$('#pw1').value,c=$('#pw2').value,e=$('#pwerr');
+  if(a!==USERS[S.user.u].pw){e.textContent='Your current password is incorrect.';$('#pw0').classList.add('bad');$('#pw0').focus();return false}
+  if(b.length<8||!/\d/.test(b)||!/[^A-Za-z0-9]/.test(b)){e.textContent='Use at least 8 characters, with a number and a symbol.';$('#pw1').classList.add('bad');$('#pw1').focus();return false}
+  if(b!==c){e.textContent="The new passwords don't match.";$('#pw2').classList.add('bad');$('#pw2').focus();return false}
+  USERS[S.user.u].pw=b;say('pwChanged')}}]})}
+function refresh(){if(S.loading)return;S.loading=true;render();setTimeout(()=>{S.loading=false;if(S.offline){say('refreshFail',{},{act:{label:'Retry',fn:refresh}})}else{S.last=Date.now();jitter()}render()},650)}
+function jitter(){const r=Math.random,cl=(v,a,b)=>Math.max(a,Math.min(b,v));RES.cpu=cl(Math.round(RES.cpu+(r()-.5)*10),15,92);RES.mem=cl(Math.round(RES.mem+(r()-.5)*4),40,88);RES.temp=cl(Math.round(RES.temp+(r()-.5)*3),44,70);NET.hist.push(+(sumBr()*(.9+r()*.2)).toFixed(1));NET.hist.shift()}
+function signOut(){S.sheet=false;document.body.classList.remove('sheet-lock');S.user=null;S.drawer=null;S.focus=false;S.lg.u='';S.lg.err='';S.lg.show=false;store.del('nvr_session3');closeMenu();closeModal();renderDrawer();render()}
+function doLogin(){const g=S.lg;if(g.loading||g.lockUntil>Date.now())return;const raw=$('#lu').value.trim(),u=raw.toLowerCase(),p=$('#lp').value;
+ g.u=raw;g.eu=u?'':'Enter your username';g.ep=p?'':'Enter your password';g.err='';if(g.eu||g.ep){render();return}
+ g.loading=true;render();$('#lp').value=p;
+ setTimeout(()=>{g.loading=false;const acc=USERS[u];
+  if(acc&&acc.pw===p){g.attempts=0;g.eu=g.ep='';loadUser(u);if(g.rem)store.set('nvr_session3',u);render()}
+  else{g.attempts++;if(g.attempts>=5){g.lockUntil=Date.now()+30000}else g.err='Incorrect username or password. '+(5-g.attempts)+' attempt'+(5-g.attempts===1?'':'s')+' left.';render()}},800)}
+function themeMenu(anchor){openMenu(anchor,[{hd:'Colour theme'}].concat(THEMES.map(t=>({sw:swatch(t),l:t[1],a:'setTheme',d:'data-t="'+t[0]+'"',on:t[0]===curTheme()[0]}))),220)}
+function dashMenu(anchor){openMenu(anchor,[{hd:'Your dashboards'}].concat(S.dashboards.map(x=>({ic:x.isDefault?'star':'grid',l:x.name,a:'switchDash',id:x.id,on:x.id===S.activeId}))).concat([{sep:1},{ic:'plus',l:'New dashboard',a:'newDash',dis:S.dashboards.length>=MAXD},{ic:'more',l:'Options for "'+activeDash().name+'"',a:'tabMenuCur'}]),260)}
+function demoItems(){return [{ic:S.offline?'wifi':'wifioff',l:S.offline?'Reconnect to the NVR':'Simulate NVR disconnect',a:'dOffline'},{ic:'bell',l:'Trigger a new critical alarm',a:'dAlarm'},{ic:'warn',l:'Show a widget load error',a:'dError'},{ic:'refresh',l:'Show loading state',a:'dLoad'},{sep:1},{ic:'trash',l:'Reset my dashboards',a:'dReset',dng:1}]}
+const wName=w=>w.title||WT[w.type].n;
+
+/* ---------- Actions ---------- */
+const A={
+ noop(){},
+ proto(d){say('proto',{l:d.l||'This screen'})},
+ togglePw(d,t){const i=$('#lp');S.lg.show=i.type==='password';i.type=S.lg.show?'text':'password';t.innerHTML=I(S.lg.show?'eyeoff':'eye',18);t.setAttribute('aria-label',(S.lg.show?'Hide':'Show')+' password')},
+ fill(d){$('#lu').value=d.u;$('#lp').value='Matrix@123';$('#lp').focus()},
+ demoHide(){S.demo=false;store.set('nvr_demo_hide','1');render()},
+ openTheme(d,t){themeMenu(t)},
+ setTheme(d){applyTheme(d.t);closeMenu();render();renderDrawer();announce(curTheme()[1]+' theme applied')},
+ openBell(d,t){openMenu(t,bellHTML(),380)},
+ openUser(d,t){openMenu(t,`<div style="padding:10px 10px 8px"><b style="font-weight:600">${esc(S.user.name)}</b><span class="pill info" style="margin-left:8px">${S.user.label}</span><p class="sm mut" style="margin-top:6px;max-width:260px">Your role is assigned by an administrator, so you can't switch it here.</p></div><div class="msep"></div><button class="mi" data-act="changePw">${I('lock',16)}<span>Change password</span></button><button class="mi" data-act="signOut">${I('logout',16)}<span>Sign out</span></button>`,300)},
+ changePw(){closeMenu();openPassword()},
+ openDemo(d,t){openMenu(t,demoItems(),270)},
+ sheetOpen(){openSheet()},
+ sheetClose(){closeSheet()},
+ go(d){const p=d.p;closeMenu();const nav=()=>{if(S.modal)closeModal();if(S.drawer)closeDrawer();S.page=p;S.sel=null;S.anchor=d.anchor||(p==='storage'?null:null);if(d.anchor)S.anchor=d.anchor;render();const c=$('.content');if(c&&!d.anchor)c.scrollTop=0;const h=$('.dh h1');if(h){h.setAttribute('tabindex','-1');h.focus({preventScroll:true})}};
+  if(S.sheet)closeSheet(nav);else nav()},
+ goHome(){A.go({p:'dashboard'})},
+ crumbDash(d,t){dashMenu(t)},
+ tabMenuCur(){setTimeout(()=>A.tabMenu({id:S.activeId},$('[data-act="crumbDash"]')),0)},
+ liveCols(d){S.liveCols=+d.v;render()},
+ alFilter(d){S.alFilter=d.v;render()},
+ issue(d){if(S.drawer)closeDrawer();openIssue(d.id)},
+ issueNav(d){const list=attItems(),i=list.findIndex(x=>x.id===S.issueId),n=list[i+(+d.d)];if(n)openIssue(n.id)},
+ event(d,t,e){if(e&&e.target.closest('[data-act="ack"]'))return;openEvent(d.id)},
+ camView(d){openCam(d.id)},
+ clip(d){openClip(d.id)},
+ dOffline(){const go2=()=>{S.offline=!S.offline;if(!S.offline)S.last=Date.now();render();if(S.offline)say('offline',{},{act:{label:'Retry',fn:refresh}});else say('online')};S.sheet?closeSheet(go2):go2()},
+ dAlarm(){const go2=()=>{const e={id:++evId,sev:'crit',type:'Intrusion',src:'CH06 Warehouse A',cam:'CH06',at:Date.now(),ack:false};EV.unshift(e);render();say('newAlarm',e,{act:{label:'View',fn:()=>openEvent(e.id)}})};S.sheet?closeSheet(go2):go2()},
+ dError(){const go2=()=>{S.page='dashboard';const w=activeDash().widgets.find(x=>!['notes','actions'].includes(x.type));if(!w){render();say('needWidget');return}S.errIds.add(w.id);render();say('widgetError',{name:wName(w)},{act:{label:'Retry',fn:()=>{S.errIds.delete(w.id);render()}}})};S.sheet?closeSheet(go2):go2()},
+ dLoad(){const go2=()=>{S.page='dashboard';S.loading=true;render();setTimeout(()=>{S.loading=false;render()},1800)};S.sheet?closeSheet(go2):go2()},
+ dReset(){const go2=()=>{const n=Math.max(0,S.dashboards.length-1);store.del(key());seed();closeDrawer();S.page='dashboard';render();say('dataReset',{n})};S.sheet?closeSheet(go2):go2()},
+ retryW(d){S.errIds.delete(d.id);render()},
+ refresh(){refresh()},
+ focus(){S.focus=!S.focus;render();if(S.focus){const b=$('.exitf');if(b)b.focus()}},
+ switchDash(d){closeMenu();S.page='dashboard';if(d.id===S.activeId){render();return}S.activeId=d.id;S.sel=null;render()},
+ newDash(){closeMenu();openNew()},
+ renameDash(d){const x=S.dashboards.find(z=>z.id===d.id);nameModal('Rename dashboard','Save name',x.name,x.id,nm=>{x.name=nm;persist();render()})},
+ dupDash(d){if(S.dashboards.length>=MAXD){say('dashMax');return}const x=S.dashboards.find(z=>z.id===d.id),c={id:uid(),name:uniqueName(x.name+' (copy)'),isDefault:false,refresh:x.refresh,widgets:clone(x.widgets).map(w=>Object.assign(w,{id:uid()}))};S.dashboards.push(c);S.activeId=c.id;persist();render()},
+ defaultDash(d){S.dashboards.forEach(x=>x.isDefault=x.id===d.id);persist();render()},
+ delDash(d){const x=S.dashboards.find(z=>z.id===d.id),n=x.widgets.length;
+  modal({title:'Delete "'+x.name+'"?',body:`<p>This removes the dashboard and its ${n} widget${n===1?'':'s'} from your account. Other users aren't affected. You can't undo this.</p>${x.isDefault?'<p>Your first remaining dashboard becomes the default.</p>':''}`,btns:[{label:'Cancel',cls:'ghost',fn:()=>{}},{label:'Delete dashboard',cls:'danger',fn:()=>{S.dashboards=S.dashboards.filter(z=>z.id!==x.id);if(!S.dashboards.some(z=>z.isDefault))S.dashboards[0].isDefault=true;if(S.activeId===x.id)S.activeId=(S.dashboards.find(z=>z.isDefault)||S.dashboards[0]).id;persist();render();say('dashDeleted',{name:x.name,n})}}]})},
+ libCat(d){S.lib.cat=d.c;$('#libcats').innerHTML=libCats();$('#liblist').innerHTML=libList()},
+ openTemplates(){openTemplates()},
+ closeDrawer(){closeDrawer()},
+ openAttention(){S.drawer='att';renderDrawer()},
+ cfgSeg(d,t){S.cfg.vals[d.k]=d.v;t.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===t))},
+ cfgCancel(){closeDrawer()},
+ ack(d,t){const e=EV.find(x=>x.id===+d.id);if(!e)return;e.ack=true;const inMenu=t.closest('.menu');render();if(inMenu&&EV.some(x=>!x.ack))openMenu($('.bell'),bellHTML(),380);else closeMenu();announce(e.type+' acknowledged')},
+ ackAll(){const ids=EV.filter(x=>!x.ack);if(!ids.length)return;ids.forEach(x=>x.ack=true);closeMenu();render();say('ackAll',{n:ids.length},U(()=>{ids.forEach(x=>x.ack=false);render()}))},
+ tact(d){const t=tdata[d.id];removeToast(d.id);if(t&&t.act)t.act.fn()},
+ tclose(d){removeToast(d.id)},
+ mclose(){closeModal()},
+ mscrim(d,t,e){if(e.target===t)closeModal()},
+ signOut(){signOut()},
+ dashSettings(d){closeMenu();const x=S.dashboards.find(z=>z.id===(d.id||S.activeId));S.dset={id:x.id,name:x.name,refresh:refreshOf(x),def:x.isDefault,wasDef:x.isDefault};S.drawer='dset';renderDrawer();const i=$('#dsname');if(i)i.focus()},
+ dsSeg(d,t){S.dset.refresh=+d.v;t.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===t))},
+ dsSave(){const s=S.dset,x=S.dashboards.find(z=>z.id===s.id),nm=s.name.trim(),er=nameErr(nm,x.id);
+  if(er){$('#dserr').textContent=er;$('#dsname').classList.add('bad');$('#dsname').focus();return}
+  let ch=false;if(nm!==x.name){x.name=nm;ch=true}if(s.refresh!==refreshOf(x)){x.refresh=s.refresh;ch=true}if(s.def&&!x.isDefault){S.dashboards.forEach(z=>z.isDefault=z.id===x.id);ch=true}
+  closeDrawer();if(!ch)return;persist();render();announce('Dashboard settings saved')},
+ tabMenu(d,t){const x=S.dashboards.find(z=>z.id===d.id);
+  openMenu(t,[{ic:'settings',l:'Dashboard settings',h:'Name, auto-refresh and default',a:'dashSettings',id:x.id},{ic:'pencil',l:'Rename',a:'renameDash',id:x.id},{ic:'copy',l:'Duplicate',a:'dupDash',id:x.id},{ic:'star',l:x.isDefault?'This is your default':'Set as default',h:x.isDefault?'':'Opens first after you sign in',a:'defaultDash',id:x.id,dis:x.isDefault},{sep:1},{ic:'undo',l:'Reset to the default layout',h:'Replaces its widgets with your role default',a:'resetLayout',id:x.id},{ic:'x',l:'Remove all widgets',a:'clearLayout',id:x.id,dis:!x.widgets.length},{sep:1},{ic:'trash',l:'Delete dashboard',h:S.dashboards.length<2?'Keep at least one dashboard':'',a:'delDash',id:x.id,dng:1,dis:S.dashboards.length<2}],270)},
+ resetLayout(d){const x=S.dashboards.find(z=>z.id===d.id),old=x.widgets;x.widgets=roleW(DEFAULTS[S.user.role].w);persist();render();say('layoutReset',{n:old.length},U(()=>{x.widgets=old;persist();render()}))},
+ clearLayout(d){const x=S.dashboards.find(z=>z.id===d.id),old=x.widgets;x.widgets=[];persist();render();say('layoutCleared',{n:old.length,dash:x.name},U(()=>{x.widgets=old;persist();render()}))},
+ addWidget(){S.drawer='lib';S.lib={q:'',cat:'All'};renderDrawer()},
+ libAdd(d){const w=mk(d.t);activeDash().widgets.push(w);persist();S.flash=w.id;render();const ll=$('#liblist');if(ll)ll.innerHTML=libList();announce(WT[d.t].n+' added')},
+ useTpl(d){closeModal();const t=TPL.find(x=>x.id===d.id),dd=activeDash(),old=dd.widgets;dd.widgets=roleW(t.w);persist();render();if(old.length)say('tplApplied',{old:old.length,name:t.n},U(()=>{dd.widgets=old;persist();render()}))},
+ tipClose(){S.tip=false;store.set('nvr_tip3','1');render()},
+ wConfig(d){const w=activeDash().widgets.find(x=>x.id===d.id);S.cfg={id:w.id,title:w.title||'',vals:cfgOf(w)};S.sel=w.id;S.drawer='cfg';renderDrawer();render()},
+ cfgReset(){const w=activeDash().widgets.find(x=>x.id===S.cfg.id);S.cfg.vals=cfgOf({type:w.type,cfg:{}});S.cfg.title='';renderDrawer()},
+ cfgApply(){const w=activeDash().widgets.find(x=>x.id===S.cfg.id),tt=S.cfg.title.trim();if(tt)w.title=tt;else delete w.title;w.cfg=clone(S.cfg.vals);persist();closeDrawer();S.flash=w.id;render()},
+ wDup(d){const a=activeDash().widgets,i=a.findIndex(x=>x.id===d.id),c=clone(a[i]);c.id=uid();a.splice(i+1,0,c);persist();S.flash=c.id;render();announce(wName(c)+' duplicated')},
+ wRemove(d){const a=activeDash().widgets,i=a.findIndex(x=>x.id===d.id),w=a.splice(i,1)[0];if(S.cfg&&S.cfg.id===w.id)closeDrawer();S.sel=null;persist();render();say('widgetRemoved',{name:wName(w)},U(()=>{const dd=activeDash();dd.widgets.splice(Math.min(i,dd.widgets.length),0,w);persist();S.flash=w.id;render()}))},
+ wMove(d){const dd=activeDash(),a=dd.widgets,i=a.findIndex(x=>x.id===d.id);let j=d.d==='start'?0:d.d==='end'?a.length-1:i+(+d.d);j=Math.max(0,Math.min(a.length-1,j));if(j===i)return;const x=a.splice(i,1)[0];a.splice(j,0,x);persist();S.flash=d.keep?null:x.id;S.sel=x.id;render();announce(wName(x)+' moved to position '+(j+1)+' of '+a.length)},
+ gripClick(d,t){if(justDragged)return;selW(d.id);const a=activeDash().widgets,i=a.findIndex(x=>x.id===d.id),n=a.length;
+  openMenu(t,'<div class="mhd">Move widget</div>'+[['start','Move to the start','first',i===0],['-1','Move earlier','left',i===0],['1','Move later','right',i===n-1],['end','Move to the end','last',i===n-1]].map(m=>`<button class="mi" data-act="wMove" data-id="${d.id}" data-d="${m[0]}" ${m[3]?'disabled':''}>${I(m[2],16)}<span>${m[1]}</span></button>`).join('')+'<div class="msep"></div><div class="mhd" style="padding-top:2px">Or drag this handle to any position.</div>',250)},
+ stripClose(){S.hide.strip=true;render()},
+ stripShow(){S.hide.strip=false;render()},
+ wSize(d){const w=activeDash().widgets.find(x=>x.id===d.id);w.size=+d.s;persist();S.flash=w.id;render();announce(wName(w)+' is now '+SZT[w.size].toLowerCase())},
+ wWidth(d,t){selW(d.id);const w=activeDash().widgets.find(x=>x.id===d.id);openMenu(t,'<div class="mhd">Widget width</div>'+WT[w.type].sizes.map(s=>`<button class="mi" role="menuitemradio" aria-checked="${w.size===s}" data-act="wSize" data-id="${w.id}" data-s="${s}"><span class="ck">${w.size===s?I('check',16):''}</span><span>${SZT[s]}</span></button>`).join(''),230)},
+ wMore(d,t){selW(d.id);const a=activeDash().widgets,i=a.findIndex(x=>x.id===d.id),others=S.dashboards.filter(x=>x.id!==S.activeId);
+  openMenu(t,[{ic:'left',l:'Move earlier',a:'wMove',id:d.id,d:'data-d="-1"',dis:i===0},{ic:'right',l:'Move later',a:'wMove',id:d.id,d:'data-d="1"',dis:i===a.length-1}].concat(others.length?[{sep:1}].concat(others.map(o=>({ic:'copy',l:'Copy to "'+o.name+'"',a:'wCopyTo',id:d.id,d:'data-to="'+o.id+'"'}))):[]).concat([{sep:1},{ic:'trash',l:'Remove widget',a:'wRemove',id:d.id,dng:1}]),270)},
+ wCopyTo(d){const w=activeDash().widgets.find(x=>x.id===d.id),to=S.dashboards.find(x=>x.id===d.to),c=clone(w);c.id=uid();to.widgets.push(c);persist();say('widgetCopied',{name:wName(w),dash:to.name},{act:{label:'Open',fn:()=>{S.activeId=to.id;S.sel=null;S.flash=c.id;render()}}})},
+ wExpand(d){openExpand(d.id)},
+ wRefresh(d){S.wLoad.add(d.id);render();setTimeout(()=>{S.wLoad.delete(d.id);if(S.offline)say('refreshFail',{},{act:{label:'Retry',fn:refresh}});else jitter();render()},600)}
+};
+function selW(id){S.sel=id;document.querySelectorAll('.widget.wsel').forEach(x=>x.classList.remove('wsel'));const el=$('[data-wid="'+id+'"]');if(el)el.classList.add('wsel')}
+function detail(t,c){
+ if(t==='cameras')return tbl(['Channel','Name','Status','Recording','Bitrate','Availability'],CAMS.map(k=>[k.id,esc(k.name),stp(k.st),rcp(k.rec),k.br?k.br+' Mbps':'No video',k.av.toFixed(1)+'%']));
+ if(t==='recording')return tbl(['Channel','Name','Recording','Camera status'],CAMS.slice().sort((a,b)=>(a.rec==='rec')-(b.rec==='rec')).map(k=>[k.id,esc(k.name),rcp(k.rec),stp(k.st)]));
+ if(t==='storage'||t==='disks')return tbl(['Disk','Capacity','Used','Temperature','Status'],DISKS.map(d=>['Disk '+d.n,d.cap+' TB',d.used+'%',d.temp+' °C',d.st==='ok'?pill('ok'):`<span class="pill warn">${I('warn',12)}Degraded</span>`]));
+ if(t==='network')return tbl(['Channel','Name','Bitrate'],CAMS.filter(k=>k.br).sort((a,b)=>b.br-a.br).map(k=>[k.id,esc(k.name),k.br+' Mbps']));
+ if(t==='availability')return tbl(['Channel','Name','Availability'],CAMS.slice().sort((a,b)=>a.av-b.av).map(k=>[k.id,esc(k.name),k.av.toFixed(1)+'%']));
+ if(t==='trend'){const d=trendData(c.range);return tbl(['Period','Critical','Warning','Info'],d.out.map((o,i)=>[d.lab[i],o.c,o.w,o.i]))}
+ return ''}
+function openExpand(id){const w=activeDash().widgets.find(x=>x.id===id),t=WT[w.type],c=Object.assign(cfgOf(w),{rows:'50',filter:'all',sev:'all',list:true,failed:true,top:true}),R=t.r(w,c);
+ const dt=detail(w.type,c);modal({title:wName(w),w:1000,body:`<p class="sm mut" style="margin-bottom:14px">${esc(R.sub||'')}</p><div style="color:var(--tx)">${R.body}</div>${dt?'<div style="margin-top:18px">'+dt+'</div>':''}`,btns:[{label:'Edit settings',cls:'ghost',fn:()=>{setTimeout(()=>A.wConfig({id}),0)}},{label:'Close',cls:'primary',fn:()=>{}}]})}
+function bellHTML(){const u=EV.filter(e=>!e.ack);
+ return `<div class="mhd">${u.length?u.length+' unacknowledged alarm'+(u.length>1?'s':''):'No unacknowledged alarms'}</div>${u.slice(0,5).map(x=>`<div class="lr isr" data-act="event" data-id="${x.id}" role="button" tabindex="0" style="padding:8px 10px;border-top:0"><span class="evi ${x.sev}">${I(x.sev==='crit'?'alert':'warn',16)}</span><div class="lg"><b>${esc(x.type)}</b><small>${esc(x.src)}, ${ago(x.at)}</small></div><button class="btn sm" data-act="ack" data-id="${x.id}">Acknowledge</button></div>`).join('')}<div class="msep"></div><button class="mi" data-act="go" data-p="alarms">${I('list',16)}<span>View all alarms</span></button>`}
+
+/* ---------- Events ---------- */
+document.addEventListener('click',e=>{
+ const m=e.target.closest('[data-mi]');if(m&&S.modal){const cur=S.modal,b=cur.btns[+m.dataset.mi];if(b&&b.fn()!==false&&S.modal===cur)closeModal();return}
+ if(justDragged){e.preventDefault();return}
+ let t=e.target.closest('[data-act]');const wd=e.target.closest('.widget');
+ if(t&&t.dataset.act==='event'&&e.target.closest('[data-act="ack"]'))t=e.target.closest('[data-act="ack"]');
+ if(!e.target.closest('.menu')||(t&&t.dataset.act!=='ack'))closeMenu();
+ if(!e.target.closest('.menu,.drawer,.scrim,#toasts,#sheet')&&(!wd||(!t&&!e.target.closest('button,a,input,textarea,select,label')))){const id=wd?wd.dataset.wid:null;S.sel=wd&&S.sel!==id?id:null;document.querySelectorAll('.widget.wsel').forEach(x=>x.classList.remove('wsel'));if(S.sel&&wd)wd.classList.add('wsel')}
+ if(!t||!A[t.dataset.act])return;A[t.dataset.act](t.dataset,t,e)});
+document.addEventListener('submit',e=>{if(e.target.id==='lf'){e.preventDefault();doLogin()}});
+document.addEventListener('change',e=>{const t=e.target;
+ if(t.id==='dsdef'&&S.dset)S.dset.def=t.checked;
+ if(t.id==='lr')S.lg.rem=t.checked;
+ if(t.dataset.cfgk&&S.cfg)S.cfg.vals[t.dataset.cfgk]=t.checked;
+ if(t.dataset.cfgm&&S.cfg){const k=t.dataset.cfgm,max=+t.dataset.max,set=new Set(S.cfg.vals[k]||[]);
+  if(t.checked){if(max&&set.size>=max){t.checked=false;$('#cfgerr').textContent='You can show up to '+max+' cameras. Clear one to choose another.';return}set.add(t.value)}else set.delete(t.value);
+  $('#cfgerr').textContent='';S.cfg.vals[k]=Array.from(set)}});
+document.addEventListener('input',e=>{const t=e.target;
+ if(t.dataset.note){const w=activeDash().widgets.find(x=>x.id===t.dataset.note);if(w)w.text=t.value;clearTimeout(noteT);noteT=setTimeout(persist,400)}
+ if(t.id==='cfgtitle'&&S.cfg)S.cfg.title=t.value;
+ if(t.id==='dsname'&&S.dset){S.dset.name=t.value;$('#dsct').textContent=t.value.length+'/30';$('#dserr').textContent='';t.classList.remove('bad')}
+ if(t.id==='libq'){S.lib.q=t.value;$('#liblist').innerHTML=libList()}
+ if(t.id==='dn'){$('#dnct').textContent=t.value.length+'/30';$('#dnerr').textContent='';t.classList.remove('bad')}
+ if(/^pw[012]$/.test(t.id)){t.classList.remove('bad');const pe=$('#pwerr');if(pe)pe.textContent=''}
+ if((t.id==='lu'||t.id==='lp')&&(S.lg.eu||S.lg.ep)){t.classList.remove('bad');const fe=t.closest('.fg').querySelector('.fe');if(fe)fe.remove();if(t.id==='lu')S.lg.eu='';else S.lg.ep=''}});
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'){if($('#menu').firstChild)closeMenu();else if(S.modal)closeModal();else if(S.sheet)closeSheet();else if(S.drawer)closeDrawer();else if(S.sel){S.sel=null;document.querySelectorAll('.widget.wsel').forEach(x=>x.classList.remove('wsel'))}else if(S.focus){S.focus=false;render()}return}
+ if(e.key==='Tab'&&S.sheet){const f=[...document.querySelectorAll('#sheetPanel button')];if(f.length){const i=f.indexOf(document.activeElement);if(e.shiftKey&&i<=0){e.preventDefault();f[f.length-1].focus()}else if(!e.shiftKey&&i===f.length-1){e.preventDefault();f[0].focus()}}}
+ if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('isr')){e.preventDefault();e.target.click();return}
+ if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('widget')){e.preventDefault();const id=e.target.dataset.wid;S.sel=S.sel===id?null:id;document.querySelectorAll('.widget.wsel').forEach(x=>x.classList.remove('wsel'));if(S.sel)e.target.classList.add('wsel')}
+ if(e.key==='Enter'&&S.dset&&e.target.id==='dsname'){e.preventDefault();A.dsSave()}
+ if(e.key==='Enter'&&S.modal&&(e.target.id==='dn'||/^pw[012]$/.test(e.target.id))){e.preventDefault();const b=$('#modal .mf .btn.primary');if(b)b.click()}
+ const g=e.target.closest&&e.target.closest('[data-grip]');if(g&&['ArrowLeft','ArrowUp','ArrowRight','ArrowDown'].includes(e.key)){e.preventDefault();A.wMove({id:g.dataset.id,d:(e.key==='ArrowLeft'||e.key==='ArrowUp')?-1:1,keep:1})}});
+
+/* ---------- Drag to reorder ---------- */
+let drag=null,justDragged=false;
+document.addEventListener('pointerdown',e=>{const g=e.target.closest&&e.target.closest('[data-grip]');if(!g||(e.pointerType==='mouse'&&e.button!==0))return;const wd=g.closest('.widget');drag={id:wd.dataset.wid,el:wd,g,pid:e.pointerId,sx:e.clientX,sy:e.clientY,started:false,over:null,before:true,vy:0};try{g.setPointerCapture(e.pointerId)}catch(x){}});
+function startDrag(e){const d=drag,r=d.el.getBoundingClientRect(),gh=d.el.cloneNode(true);closeMenu();
+ const tb=gh.querySelector('.wtb');if(tb)tb.remove();gh.classList.remove('wsel');gh.classList.add('dghost');gh.style.cssText='width:'+r.width+'px;height:'+r.height+'px;left:'+r.left+'px;top:'+r.top+'px';
+ d.ox=e.clientX-r.left;d.oy=e.clientY-r.top;d.ghost=gh;document.body.appendChild(gh);
+ d.line=document.createElement('div');d.line.className='dropline';d.line.style.display='none';document.body.appendChild(d.line);
+ d.el.classList.add('dsrc');document.body.classList.add('dragging');d.started=true;
+ d.timer=setInterval(()=>{const c=$('.content');if(c&&d.vy)c.scrollTop+=d.vy},16)}
+function moveDrag(e){const d=drag;d.ghost.style.left=(e.clientX-d.ox)+'px';d.ghost.style.top=(e.clientY-d.oy)+'px';
+ const c=$('.content'),cr=c.getBoundingClientRect();d.vy=e.clientY<cr.top+70?-14:e.clientY>cr.bottom-70?14:0;
+ const t=document.elementFromPoint(e.clientX,e.clientY),wd=t&&t.closest&&t.closest('.widget:not(.dsrc)');
+ if(!wd)return;const r=wd.getBoundingClientRect(),g=wd.parentNode.getBoundingClientRect(),horiz=r.width<g.width*.95,before=horiz?e.clientX<r.left+r.width/2:e.clientY<r.top+r.height/2,L=d.line.style;
+ d.over=wd.dataset.wid;d.before=before;L.display='block';
+ if(horiz){L.width='4px';L.height=r.height+'px';L.top=r.top+'px';L.left=(before?r.left-10:r.right+6)+'px'}else{L.height='4px';L.width=r.width+'px';L.left=r.left+'px';L.top=(before?r.top-10:r.bottom+6)+'px'}}
+function endDrag(e,commit){const d=drag;if(!d||(e.pointerId!==undefined&&e.pointerId!==d.pid))return;drag=null;try{d.g.releasePointerCapture(d.pid)}catch(x){}
+ if(!d.started)return;clearInterval(d.timer);d.ghost.remove();d.line.remove();d.el.classList.remove('dsrc');document.body.classList.remove('dragging');
+ justDragged=true;setTimeout(()=>{justDragged=false},60);
+ if(commit&&d.over&&d.over!==d.id){const a=activeDash().widgets,from=a.findIndex(x=>x.id===d.id),it=a.splice(from,1)[0];let to=a.findIndex(x=>x.id===d.over);if(!d.before)to++;a.splice(to,0,it);
+  S.flash=it.id;S.sel=it.id;persist();render();announce(wName(it)+' moved to position '+(to+1)+' of '+a.length);return}
+ render()}
+document.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.pid)return;if(!drag.started){if(Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)<5)return;startDrag(e)}moveDrag(e)});
+document.addEventListener('pointerup',e=>endDrag(e,true));
+document.addEventListener('pointercancel',e=>endDrag(e,false));
+window.addEventListener('resize',()=>{placeToasts();closeMenu()});
+
+/* ---------- Timers & init ---------- */
+setInterval(()=>{
+ if(!S.user){if(S.lg.lockUntil){if(Date.now()>=S.lg.lockUntil){S.lg.lockUntil=0;S.lg.attempts=0;S.lg.err='';render()}else{const x=$('#lerrt');if(x)x.textContent=lockText()}}return}
+ syncUpd();const d=activeDash(),ri=d&&refreshOf(d);if(S.page==='dashboard'&&ri&&!paused()&&!S.offline&&!S.loading&&!S.sheet&&Date.now()-S.last>=ri*1000)refresh()},1000);
+(function init(){const th=store.get('nvr_theme_v3');if(th&&THEMES.some(t=>t[0]===th))document.documentElement.dataset.nvr=th;
+ const su=store.get('nvr_session3');if(su&&USERS[su])loadUser(su);render()})();
+window.__nvr={S,A,render};
+})();
+</script>
+</body>
+</html>
